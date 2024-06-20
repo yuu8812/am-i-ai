@@ -5,7 +5,7 @@ import {
 } from 'src/amIAi/contract/type';
 
 @Injectable()
-export class AmIAiFindQuestionsUseCase {
+export class FindQuestionsUseCase {
   async execute(
     param: GameContractRequestShapes['findQuestions'],
   ): Promise<GameContractResponseShapes['findQuestions']> {

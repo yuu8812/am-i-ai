@@ -13,7 +13,7 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
-    "serve": "concurrently \"yarn build --watch\" \"firebase emulators:start --only functions\"",
+    "serve": "yarn build && firebase emulators:start --only functions",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -22,6 +22,9 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@mikro-orm/core": "^6.2.9",
+    "@mikro-orm/nestjs": "^6.0.2",
+    "@mikro-orm/postgresql": "^6.2.9",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^3.2.2",
     "@nestjs/core": "^9.0.0",

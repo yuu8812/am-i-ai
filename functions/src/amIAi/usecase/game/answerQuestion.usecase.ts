@@ -5,13 +5,13 @@ import {
 } from 'src/amIAi/contract/type';
 
 @Injectable()
-export class AmIAiStartGameUseCase {
+export class AnswerQuestionUseCase {
   async execute(
-    param: GameContractRequestShapes['startGame'],
-  ): Promise<GameContractResponseShapes['startGame']> {
+    param: GameContractRequestShapes['answerQuestion'],
+  ): Promise<GameContractResponseShapes['answerQuestion']> {
     return await {
       status: 201,
-      body: undefined,
+      body: 'OK',
     };
   }
 }

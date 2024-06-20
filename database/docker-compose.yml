@@ -1,0 +1,18 @@
+version: "3.6"
+services:
+  postgres:
+    image: docker.io/postgres:13.5-alpine3.15
+    command: postgres -c jit=off
+    container_name: am-i-ai-db
+    environment:
+      - TZ=Asia/Tokyo
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    restart: always
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+volumes:
+  db_data:
