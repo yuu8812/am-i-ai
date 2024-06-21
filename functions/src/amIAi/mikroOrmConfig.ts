@@ -10,6 +10,7 @@ const POSTGRES_DB = 'default';
 export const mikroOrmConfig: MikroOrmModuleOptions = {
   entities: ['./dist/amIAi/entities'],
   entitiesTs: ['./src/amIAi/entities'],
+
   driver: PostgreSqlDriver,
 
   clientUrl: `postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}`,

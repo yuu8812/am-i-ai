@@ -6,10 +6,14 @@ import {
   Property,
 } from '@mikro-orm/core';
 
+import { generate } from 'short-uuid';
+
+const shortUuid = generate();
+
 @Entity({ repository: () => GameRepository })
 export class Game {
-  @PrimaryKey()
-  _id!: string;
+  @PrimaryKey({ default: shortUuid })
+  id: string;
 
   @Property()
   createdAt = new Date();

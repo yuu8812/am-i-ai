@@ -16,7 +16,6 @@ export class FindGameDataUseCase {
     param: GameContractRequestShapes['findGameData'],
   ): Promise<GameContractResponseShapes['findGameData']> {
     const response = this.gameRepository.create({
-      _id: `${Math.random()}`.slice(2).toString(),
       createdAt: new Date(),
     });
     await this.em.flush();
