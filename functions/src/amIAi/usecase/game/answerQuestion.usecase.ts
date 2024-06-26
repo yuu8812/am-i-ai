@@ -9,7 +9,7 @@ export class AnswerQuestionUseCase {
   async execute(
     param: GameContractRequestShapes['answerQuestion'],
   ): Promise<GameContractResponseShapes['answerQuestion']> {
-    return await {
+    return {
       status: 201,
       body: 'OK',
     };

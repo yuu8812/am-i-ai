@@ -21,15 +21,8 @@ export class FindGameDataUseCase {
     await this.em.flush();
     Logger.log(JSON.stringify(response));
     return {
-      status: 201,
-      body: {
-        users: [
-          {
-            id: 'id2',
-            name: response.createdAt,
-          },
-        ],
-      },
+      status: 200,
+      body: { id: response.id },
     };
   }
 }

@@ -12,10 +12,7 @@ export const USER_CONTRACT = c.router({
       id: z.string().uuid(),
     }),
     responses: {
-      200: z.object({
-        id: z.string(),
-        name: z.string(),
-      }),
+      200: c.type<{ id: string; name: string }>(),
     },
   },
 
@@ -23,7 +20,7 @@ export const USER_CONTRACT = c.router({
     method: 'POST',
     path: '/user',
     responses: {
-      201: z.string(),
+      201: c.type<{ id: string }>(),
     },
     body: z.object({
       name: MAX_NAME_STRING,
@@ -37,7 +34,7 @@ export const USER_CONTRACT = c.router({
       id: z.string().uuid(),
     }),
     responses: {
-      200: z.string(),
+      200: c.type<{ id: string }>(),
     },
     body: z.object({
       name: MAX_NAME_STRING,

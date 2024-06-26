@@ -9,7 +9,7 @@ export class StartGameUseCase {
   async execute(
     param: GameContractRequestShapes['startGame'],
   ): Promise<GameContractResponseShapes['startGame']> {
-    return await {
+    return {
       status: 201,
       body: undefined,
     };

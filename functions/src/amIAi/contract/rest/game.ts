@@ -20,10 +20,7 @@ export const GAME_CONTRACT = c.router({
       gameId: z.string().uuid(),
     }),
     responses: {
-      200: z.object({
-        question: z.string(),
-        options: z.array(z.string()),
-      }),
+      200: c.type<{ questions: { question: string; options: string[] }[] }>(),
     },
   },
 
@@ -49,18 +46,7 @@ export const GAME_CONTRACT = c.router({
       gameId: z.string().uuid(),
     }),
     responses: {
-      200: z.object({
-        users: z.array(
-          z.object({
-            id: z.string(),
-            name: z.string(),
-          }),
-        ),
-        gameData: z.object({
-          id: z.string(),
-          name: z.string(),
-        }),
-      }),
+      200: c.type<{ id: string }>(),
     },
   },
 });

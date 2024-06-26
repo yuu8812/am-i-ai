@@ -1,18 +1,17 @@
-import { GameRepository } from 'src/amIAi/repository/game.repository';
 import {
   Entity,
   EntityRepositoryType,
   PrimaryKey,
   Property,
 } from '@mikro-orm/core';
-
 import { generate } from 'short-uuid';
+import { GameUserRepository } from 'src/amIAi/repository/gameUser.repository';
 
 @Entity({
-  repository: () => GameRepository,
-  tableName: 'game',
+  tableName: 'game_user',
+  repository: () => GameUserRepository,
 })
-export class Game {
+export class GameUser {
   @PrimaryKey({ onCreate: () => generate() })
   id: string;
 
@@ -25,5 +24,5 @@ export class Game {
   @Property({ default: 0 })
   status: 0 | 1 | 2 | 3;
 
-  [EntityRepositoryType]?: GameRepository;
+  [EntityRepositoryType]?: GameUserRepository;
 }
