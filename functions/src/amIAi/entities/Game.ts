@@ -1,27 +1,13 @@
 import { GameRepository } from 'src/amIAi/repository/game.repository';
-import {
-  Entity,
-  EntityRepositoryType,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/core';
+import { Entity, EntityRepositoryType, Property } from '@mikro-orm/core';
 
-import { generate } from 'short-uuid';
+import { BaseEntity } from 'src/amIAi/entityHelper/base';
 
 @Entity({
   repository: () => GameRepository,
   tableName: 'game',
 })
-export class Game {
-  @PrimaryKey({ onCreate: () => generate() })
-  id: string;
-
-  @Property({ onCreate: () => new Date() })
-  createdAt: Date;
-
-  @Property({ onUpdate: () => new Date() })
-  updatedAt: Date;
-
+export class Game extends BaseEntity {
   @Property({ default: 0 })
   status: 0 | 1 | 2 | 3;
 

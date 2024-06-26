@@ -1,5 +1,5 @@
 import { Logger, Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppConfigService } from 'src/amIAi/config/config.service';
 
 @Module({
@@ -23,7 +23,16 @@ import { AppConfigService } from 'src/amIAi/config/config.service';
       },
     }),
   ],
-  providers: [AppConfigService],
+  providers: [
+    ConfigService,
+    {
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        return new AppConfigService(configService);
+      },
+      provide: AppConfigService,
+    },
+  ],
   exports: [AppConfigService],
 })
 export class AppConfigModule {}
