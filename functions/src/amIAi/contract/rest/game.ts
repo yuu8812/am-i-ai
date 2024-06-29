@@ -1,5 +1,9 @@
+/**
+ * ###IMPORTANT###
+ * this files import path should be relative to the contract file
+ */
+import { MAX_ANSWER_STRING } from './../constants';
 import { initContract } from '@ts-rest/core';
-import { MAX_ANSWER_STRING } from 'src/amIAi/contract/constants';
 import { z } from 'zod';
 const c = initContract();
 
@@ -10,7 +14,7 @@ export const GAME_CONTRACT = c.router({
     responses: {
       201: z.string(),
     },
-    body: undefined,
+    body: null,
   },
 
   findQuestions: {

@@ -1,5 +1,4 @@
-import { NestRequestShapes, NestResponseShapes } from '@ts-rest/nest';
-import CONTRACT from 'src/amIAi/contract';
+import { NestRequestShapes, NestResponseShapes } from "@ts-rest/nest";
 
 export type GameContractRequestShapes = NestRequestShapes<
   typeof CONTRACT.GAMES

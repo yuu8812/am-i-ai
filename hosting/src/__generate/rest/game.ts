@@ -1,21 +1,21 @@
-import { initContract } from '@ts-rest/core';
-import { MAX_ANSWER_STRING } from 'src/amIAi/contract/constants';
-import { z } from 'zod';
+import { initContract } from "@ts-rest/core";
+import { z } from "zod";
+import { MAX_ANSWER_STRING } from "../constants";
 const c = initContract();
 
 export const GAME_CONTRACT = c.router({
   startGame: {
-    method: 'POST',
-    path: '/game/start',
+    method: "POST",
+    path: "/game/start",
     responses: {
       201: z.string(),
     },
-    body: undefined,
+    body: null,
   },
 
   findQuestions: {
-    method: 'GET',
-    path: '/game/:gameId/questions',
+    method: "GET",
+    path: "/game/:gameId/questions",
     pathParams: z.object({
       gameId: z.string().uuid(),
     }),
@@ -25,8 +25,8 @@ export const GAME_CONTRACT = c.router({
   },
 
   answerQuestion: {
-    method: 'POST',
-    path: '/game/:gameId/answer/:questionId',
+    method: "POST",
+    path: "/game/:gameId/answer/:questionId",
     pathParams: z.object({
       gameId: z.string().uuid(),
       questionId: z.string().uuid(),
@@ -40,8 +40,8 @@ export const GAME_CONTRACT = c.router({
   },
 
   findGameData: {
-    method: 'GET',
-    path: '/game/:gameId',
+    method: "GET",
+    path: "/game/:gameId",
     pathParams: z.object({
       gameId: z.string().uuid(),
     }),

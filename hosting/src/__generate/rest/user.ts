@@ -1,13 +1,13 @@
-import { initContract } from '@ts-rest/core';
-import { MAX_NAME_STRING } from 'src/amIAi/contract/constants';
-import * as z from 'zod';
+import { initContract } from "@ts-rest/core";
+import * as z from "zod";
+import { MAX_NAME_STRING } from "../constants";
 
 const c = initContract();
 
 export const USER_CONTRACT = c.router({
   getUser: {
-    method: 'GET',
-    path: '/user/:id',
+    method: "GET",
+    path: "/user/:id",
     pathParams: z.object({
       id: z.string().uuid(),
     }),
@@ -17,8 +17,8 @@ export const USER_CONTRACT = c.router({
   },
 
   createUser: {
-    method: 'POST',
-    path: '/user',
+    method: "POST",
+    path: "/user",
     responses: {
       201: c.type<{ id: string }>(),
     },
@@ -28,8 +28,8 @@ export const USER_CONTRACT = c.router({
   },
 
   editUser: {
-    method: 'PUT',
-    path: '/user/:id',
+    method: "PUT",
+    path: "/user/:id",
     pathParams: z.object({
       id: z.string().uuid(),
     }),

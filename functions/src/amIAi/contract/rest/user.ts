@@ -1,5 +1,9 @@
+/**
+ * ###IMPORTANT###
+ * this files import path should be relative to the contract file
+ */
+import { MAX_NAME_STRING } from './../constants';
 import { initContract } from '@ts-rest/core';
-import { MAX_NAME_STRING } from 'src/amIAi/contract/constants';
 import * as z from 'zod';
 
 const c = initContract();

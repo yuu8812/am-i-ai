@@ -1,6 +1,10 @@
+/**
+ * ###IMPORTANT###
+ * this files import path should be relative to the contract file
+ */
 import { initContract } from '@ts-rest/core';
-import { GAME_CONTRACT } from 'src/amIAi/contract/rest/game';
-import { USER_CONTRACT } from 'src/amIAi/contract/rest/user';
+import { GAME_CONTRACT } from './rest/game';
+import { USER_CONTRACT } from './rest/user';
 
 const c = initContract();
 
