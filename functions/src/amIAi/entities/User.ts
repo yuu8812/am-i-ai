@@ -16,5 +16,8 @@ export class User extends BaseEntity {
   @Property({ type: 'text' })
   name: string;
 
+  @Property({ default: 0 })
+  language: 0 | 1 | 2;
+
   [EntityRepositoryType]?: UserRepository;
 }

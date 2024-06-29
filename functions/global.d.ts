@@ -7,4 +7,5 @@ type Environment = {
   POSTGRES_USER: string;
   POSTGRES_PASSWORD: string;
   POSTGRES_DB: string;
+  GOOGLE_CLIENT_ID: string;
 };

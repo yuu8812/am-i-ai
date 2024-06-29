@@ -15,14 +15,10 @@ export class FindGameDataUseCase {
   async execute(
     param: GameContractRequestShapes['findGameData'],
   ): Promise<GameContractResponseShapes['findGameData']> {
-    const response = this.gameRepository.create({
-      createdAt: new Date(),
-    });
-    await this.em.flush();
-    Logger.log(JSON.stringify(response));
+    Logger.log(param.headers['x-user-id']);
     return {
       status: 200,
-      body: { id: response.id },
+      body: { id: param.headers['x-user-id'] },
     };
   }
 }

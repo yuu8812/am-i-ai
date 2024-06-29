@@ -1,7 +1,7 @@
 import {
   Entity,
   EntityRepositoryType,
-  OneToOne,
+  ManyToOne,
   Property,
 } from '@mikro-orm/core';
 import { User } from 'src/amIAi/entities/User';
@@ -22,7 +22,7 @@ export class Question extends BaseEntity {
   @Property({ default: 0 })
   createdBy: 0 | 1 | 2 | 3;
 
-  @OneToOne(() => User)
+  @ManyToOne(() => User)
   createUser: User;
 
   [EntityRepositoryType]?: QuestionRepository;

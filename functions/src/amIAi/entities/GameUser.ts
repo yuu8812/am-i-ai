@@ -17,10 +17,13 @@ export class GameUser extends BaseEntity {
   @Property({ default: 0 })
   status: 0 | 1 | 2 | 3;
 
+  @Property({ default: 0 })
+  type: 0 | 1 | 2;
+
   @OneToOne(() => Game)
   game: Game;
 
-  @OneToOne(() => User)
+  @OneToOne(() => User, { nullable: true })
   user: User;
 
   [EntityRepositoryType]?: GameUserRepository;
