@@ -1,6 +1,7 @@
 import { Logger, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppConfigService } from 'src/amIAi/config/config.service';
+import { Environment } from 'src/amIAi/config/type';
 
 @Module({
   imports: [

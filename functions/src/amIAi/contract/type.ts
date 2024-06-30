@@ -3,7 +3,7 @@
  * this files import path should be relative to the contract file
  */
 import { NestRequestShapes, NestResponseShapes } from '@ts-rest/nest';
-import CONTRACT from '../contract';
+import CONTRACT from './rest';
 
 export type GameContractRequestShapes = NestRequestShapes<
   typeof CONTRACT.GAMES

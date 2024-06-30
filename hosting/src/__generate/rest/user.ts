@@ -1,13 +1,17 @@
-import { initContract } from "@ts-rest/core";
-import * as z from "zod";
-import { MAX_NAME_STRING } from "../constants";
+/**
+ * ###IMPORTANT###
+ * this files import path should be relative to the contract file
+ */
+import { MAX_NAME_STRING } from './constants';
+import { initContract } from '@ts-rest/core';
+import * as z from 'zod';
 
 const c = initContract();
 
 export const USER_CONTRACT = c.router({
   getUser: {
-    method: "GET",
-    path: "/user/:id",
+    method: 'GET',
+    path: '/user/:id',
     pathParams: z.object({
       id: z.string().uuid(),
     }),
@@ -17,8 +21,8 @@ export const USER_CONTRACT = c.router({
   },
 
   createUser: {
-    method: "POST",
-    path: "/user",
+    method: 'POST',
+    path: '/user',
     responses: {
       201: c.type<{ id: string }>(),
     },
@@ -28,8 +32,8 @@ export const USER_CONTRACT = c.router({
   },
 
   editUser: {
-    method: "PUT",
-    path: "/user/:id",
+    method: 'PUT',
+    path: '/user/:id',
     pathParams: z.object({
       id: z.string().uuid(),
     }),

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Environment } from 'src/amIAi/config/type';
 
 @Injectable()
 export class AppConfigService extends ConfigService {

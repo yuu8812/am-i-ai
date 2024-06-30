@@ -2,7 +2,7 @@
  * ###IMPORTANT###
  * this files import path should be relative to the contract file
  */
-import { MAX_NAME_STRING } from './../constants';
+import { MAX_NAME_STRING } from './constants';
 import { initContract } from '@ts-rest/core';
 import * as z from 'zod';
 

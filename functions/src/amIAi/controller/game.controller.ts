@@ -1,10 +1,10 @@
 import { Controller } from '@nestjs/common';
 import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
-import CONTRACT from 'src/amIAi/contract';
 import { AnswerQuestionUseCase } from 'src/amIAi/usecase/game/answerQuestion.usecase';
 import { StartGameUseCase } from 'src/amIAi/usecase/game/startGame.usecase';
 import { FindGameDataUseCase } from 'src/amIAi/usecase/game/findGameData.usecase';
 import { FindQuestionsUseCase } from 'src/amIAi/usecase/game/findQuestions.usecase';
+import CONTRACT from 'src/amIAi/contract/rest';
 
 @Controller()
 export class GameController {
