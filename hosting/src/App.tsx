@@ -1,45 +1,50 @@
 import "./App.css";
-import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
+import {
+  BrowserRouter,
+  Link,
+  Route,
+  Routes,
+  useLocation,
+} from "react-router-dom";
 import AuthProvider from "./auth/AuthProvider";
-import { ReactNode } from "react";
-
-const Layout = ({ children }: { children: ReactNode }) => {
-  return (
-    <div className="h-screen w-screen flex flex-1 flex-row bg-blue-100">
-      {children}
-    </div>
-  );
-};
-
-const PrivateLayout = () => {
-  return (
-    <div className="h-screen w-screen flex flex-1 flex-row bg-red-100">
-      <h1>PrivateLayout</h1>
-      <Outlet />
-    </div>
-  );
-};
+import { AnimatePresence } from "framer-motion";
+import LazyHome from "src/pages/home";
+import { RecoilRoot } from "recoil";
+import Layout from "src/component/Layout";
+import GlobalLayout from "src/component/GlobalLayout";
+import LazySolo from "src/pages/game";
 
 const Router = () => {
+  const location = useLocation();
+
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route element={<PrivateLayout />}>
-          <Route path="/" element={<div>Home</div>} />
-          <Route path="about" element={<div>About</div>} />
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route element={<Layout />}>
+          <Route index element={<LazyHome />} />
+          <Route path="game">
+            <Route path="solo" element={<LazySolo />} />
+            <Route path="multi" element={<Link to="/">home</Link>} />
+            <Route path="setting" element={<Link to="/">home</Link>} />
+          </Route>
         </Route>
+        <Route path="*" element={<Link to="/">not found</Link>} />
       </Routes>
-    </BrowserRouter>
+    </AnimatePresence>
   );
 };
 
 const App = () => {
   return (
-    <Layout>
-      <AuthProvider>
-        <Router />
-      </AuthProvider>
-    </Layout>
+    <GlobalLayout>
+      <RecoilRoot>
+        <AuthProvider>
+          <BrowserRouter>
+            <Router />
+          </BrowserRouter>
+        </AuthProvider>
+      </RecoilRoot>
+    </GlobalLayout>
   );
 };
 
