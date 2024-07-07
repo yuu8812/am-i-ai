@@ -22,6 +22,9 @@ export class Question extends BaseEntity {
   @Property({ default: 0 })
   createdBy: 0 | 1 | 2 | 3;
 
+  @Property({ default: 'en' })
+  language: 'en';
+
   @ManyToOne(() => User)
   createUser: User;
 

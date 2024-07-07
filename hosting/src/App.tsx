@@ -12,7 +12,9 @@ import LazyHome from "src/pages/home";
 import { RecoilRoot } from "recoil";
 import Layout from "src/component/Layout";
 import GlobalLayout from "src/component/GlobalLayout";
-import LazySolo from "src/pages/game";
+import { LazyMulti, LazySolo } from "src/pages/game";
+import { LazySetting } from "src/pages/setting";
+import { Suspense } from "react";
 
 const Router = () => {
   const location = useLocation();
@@ -23,9 +25,16 @@ const Router = () => {
         <Route element={<Layout />}>
           <Route index element={<LazyHome />} />
           <Route path="game">
-            <Route path="solo" element={<LazySolo />} />
+            <Route path="solo">
+              <Route index element={<LazySolo />} />
+              <Route path=":id" element={<LazySolo />} />
+            </Route>
+            <Route path="multi">
+              <Route index element={<LazyMulti />} />
+              <Route path=":id" element={<LazyMulti />} />
+            </Route>
             <Route path="multi" element={<Link to="/">home</Link>} />
-            <Route path="setting" element={<Link to="/">home</Link>} />
+            <Route path="setting" element={<LazySetting />} />
           </Route>
         </Route>
         <Route path="*" element={<Link to="/">not found</Link>} />
@@ -40,7 +49,9 @@ const App = () => {
       <RecoilRoot>
         <AuthProvider>
           <BrowserRouter>
-            <Router />
+            <Suspense fallback={<div>Loading...</div>}>
+              <Router />
+            </Suspense>
           </BrowserRouter>
         </AuthProvider>
       </RecoilRoot>

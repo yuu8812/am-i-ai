@@ -5,7 +5,7 @@ import {
   Property,
 } from '@mikro-orm/core';
 import { GameAnswer } from 'src/amIAi/entities/GameAnswer';
-import { User } from 'src/amIAi/entities/User';
+import { GameUser } from 'src/amIAi/entities/GameUser';
 import { BaseEntity } from 'src/amIAi/entityHelper/base';
 import { VoteRepository } from 'src/amIAi/repository/vote.repository';
 
@@ -17,8 +17,8 @@ export class Vote extends BaseEntity {
   @Property({ default: 0 })
   type: 0 | 1 | 2;
 
-  @ManyToOne(() => User)
-  user: User;
+  @ManyToOne(() => GameUser)
+  game_user: GameUser;
 
   @ManyToOne(() => GameAnswer)
   gameAnswer: GameAnswer;

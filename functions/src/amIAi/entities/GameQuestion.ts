@@ -4,7 +4,8 @@ import {
   ManyToOne,
   Property,
 } from '@mikro-orm/core';
-import { Game } from 'src/amIAi/entities/Game';
+import { GamePhase } from 'src/amIAi/entities/GamePhase';
+import { Question } from 'src/amIAi/entities/Question';
 import { BaseEntity } from 'src/amIAi/entityHelper/base';
 import { GameQuestionRepository } from 'src/amIAi/repository/gameQuestion.repository';
 
@@ -16,17 +17,11 @@ export class GameQuestion extends BaseEntity {
   @Property({ default: 0 })
   status: 0 | 1 | 2 | 3;
 
-  @Property({ default: 0 })
-  phase: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+  @ManyToOne(() => GamePhase)
+  game_phase: GamePhase;
 
-  @ManyToOne(() => Game)
-  game: Game;
-
-  @ManyToOne(() => GameQuestion)
-  question: GameQuestion;
-
-  @Property({ default: 0 })
-  language: 0 | 1 | 2;
+  @ManyToOne(() => Question)
+  question: Question;
 
   [EntityRepositoryType]?: GameQuestionRepository;
 }

@@ -2,7 +2,7 @@
   "eslint.workingDirectories": ["./functions/src", "./hosting/src"],
   "eslint.enable": true,
   "editor.formatOnSave": true,
-  "cSpell.words": ["nestjs", "proto", "usecase", "mikro"],
+  "cSpell.words": ["nestjs", "proto", "usecase", "mikro", "amiai"],
   "typescript.preferences.importModuleSpecifier": "non-relative",
   "javascript.preferences.importModuleSpecifier": "non-relative"
 }

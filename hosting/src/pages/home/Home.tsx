@@ -1,10 +1,22 @@
-import React from "react";
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import Transition from "src/animate/Transition";
 import Card from "src/component/Card";
 import TitleArea from "src/component/TitleArea";
+import { useSocketState } from "src/globalState/socketState";
 
 const Home = () => {
+  const { state: socket } = useSocketState();
+
+  useEffect(() => {
+    socket.on("connect", () => {
+      console.log("connected");
+    });
+    return () => {
+      socket.off("connect");
+    };
+  }, [socket]);
+
   return (
     <div className="flex flex-1 flex-col">
       <TitleArea title="Home" />
@@ -18,7 +30,7 @@ const Home = () => {
                 Start a new game and test your AI detection skills
               </div>
               <div className="flex gap-10 flex-1 items-center justify-center">
-                <Link
+                {/* <Link
                   to={`game/solo`}
                   className="relative w-60 h-24 shadow-lg text-sm rounded flex items-center justify-center bg-gradient-to-r from-red-400 to-red-600 text-white font-bold hover:scale-105 hover:shadow-2xl transition transform duration-300 ease-in-out"
                 >
@@ -27,7 +39,7 @@ const Home = () => {
                     <span className="pr-2" />
                     Solo player mode
                   </span>
-                </Link>
+                </Link> */}
                 <Link
                   to={`game/multi`}
                   className="relative w-60 h-24 shadow-lg text-sm rounded flex items-center justify-center bg-gradient-to-r from-blue-400 to-blue-600 text-white font-bold hover:scale-105 hover:shadow-2xl transition transform duration-300 ease-in-out"
@@ -35,7 +47,7 @@ const Home = () => {
                   <span className="absolute inset-0 flex items-center justify-center transition-all duration-300 transform group-hover:translate-x-0 group-hover:translate-y-0 ease-in-out">
                     👫
                     <span className="pr-2" />
-                    Multi player mode
+                    Start a new game
                   </span>
                 </Link>
               </div>

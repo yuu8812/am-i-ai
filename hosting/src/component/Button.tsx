@@ -32,9 +32,8 @@ const Button = ({
           disabled ? "" : "group-hover:scale-100 bg-red-200"
         } absolute inset-0 flex items-center justify-center w-full rounded-full h-full text-white transition-all duration-300 transform scale-0 group-hover:scale-100 ease`}
       />
-      <button
+      <div
         onClick={handleClick}
-        disabled={disabled}
         className={`${
           disabled ? "" : "hover:text-black"
         } transition-all flex flex-1 relative  h-12 items-center justify-center px-8 gap-0`}
@@ -43,7 +42,7 @@ const Button = ({
           {isLoading && <AiOutlineLoading3Quarters size={14} />}
         </div>
         {message}
-      </button>
+      </div>
     </button>
   );
 };

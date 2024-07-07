@@ -5,7 +5,7 @@ import Loading from "../component/Loading";
 import { useAuthState } from "src/globalState/authState";
 
 const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const { setAuth, state } = useAuthState();
+  const { setAuth } = useAuthState();
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     setLoading(true);
@@ -19,9 +19,6 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
     return unsubscribed;
   }, [setAuth]);
-
-  console.log("loading", loading);
-  console.log("state", state);
 
   return (
     <div className="flex flex-1">

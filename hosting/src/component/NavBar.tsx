@@ -1,6 +1,5 @@
 import { NavLink } from "react-router-dom";
 import { MdHome } from "react-icons/md";
-import { MdOutlineSentimentSatisfied } from "react-icons/md";
 import { MdSettings } from "react-icons/md";
 
 import MultiIcon from "src/component/MultiIcon";
@@ -11,14 +10,14 @@ const NAV_BAR_PATH_INFO_ARRAY = [
     text: "Home",
     Icon: <MdHome size={20} />,
   },
-  {
-    route: "/game/solo",
-    text: "Solo",
-    Icon: <MdOutlineSentimentSatisfied size={20} />,
-  },
+  // {
+  //   route: "/game/solo",
+  //   text: "Solo",
+  //   Icon: <MdOutlineSentimentSatisfied size={20} />,
+  // },
   {
     route: "/game/multi",
-    text: "Multi",
+    text: "Game",
     Icon: <MultiIcon />,
   },
   {

@@ -2,14 +2,25 @@ import { NestFactory } from '@nestjs/core';
 import { AmIAiModule } from 'src/amIAi/app/amIAi.module';
 import * as express from 'express';
 import { ExpressAdapter } from '@nestjs/platform-express';
+import admin from 'firebase-admin';
+
 import { Logger, ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 import { MikroORM } from '@mikro-orm/core';
+import * as serviceAccount from 'src/amIAi/firebase.json';
+
 import { AppConfigService } from 'src/amIAi/config/config.service';
 
 export const server = express();
 
 const init = async () => {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
+  });
+  Logger.log(
+    `firebase: ${await (admin as any).app().options.credential
+      .projectId} has been initialized`,
+  );
   const app = await NestFactory.create(AmIAiModule, new ExpressAdapter(server));
   const configService = app.get(AppConfigService);
   const allowOrigins = configService.get('ALLOW_ORIGINS').split(' ');

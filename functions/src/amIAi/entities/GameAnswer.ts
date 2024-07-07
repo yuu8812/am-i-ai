@@ -4,7 +4,7 @@ import {
   ManyToOne,
   Property,
 } from '@mikro-orm/core';
-import { Game } from 'src/amIAi/entities/Game';
+import { GameQuestion } from 'src/amIAi/entities/GameQuestion';
 import { GameUser } from 'src/amIAi/entities/GameUser';
 import { BaseEntity } from 'src/amIAi/entityHelper/base';
 import { GameAnswerRepository } from 'src/amIAi/repository/gameAnswer.repository';
@@ -20,8 +20,8 @@ export class GameAnswer extends BaseEntity {
   @Property({ type: 'text' })
   answer: string;
 
-  @ManyToOne(() => Game)
-  game: Game;
+  @ManyToOne(() => GameQuestion)
+  question_id: GameQuestion;
 
   @ManyToOne(() => GameUser)
   gameUser: GameUser;

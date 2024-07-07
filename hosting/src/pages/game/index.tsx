@@ -5,6 +5,10 @@ const Solo = lazy(async () => {
   return import("src/pages/game/Solo");
 });
 
+const Multi = lazy(async () => {
+  return import("src/pages/game/Multi");
+});
+
 const LazySolo = () => {
   return (
     <Suspense fallback={<Skeleton />}>
@@ -13,4 +17,12 @@ const LazySolo = () => {
   );
 };
 
-export default LazySolo;
+const LazyMulti = () => {
+  return (
+    <Suspense fallback={<Skeleton />}>
+      <Multi />
+    </Suspense>
+  );
+};
+
+export { LazySolo, LazyMulti };
