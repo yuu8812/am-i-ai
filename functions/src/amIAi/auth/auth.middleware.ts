@@ -1,6 +1,5 @@
 import {
   Injectable,
-  Logger,
   NestMiddleware,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -9,10 +8,11 @@ import { Request, Response, NextFunction } from 'express';
 import { OAuth2Client } from 'google-auth-library';
 import { AuthService } from 'src/amIAi/auth/auth.service';
 import { AppConfigService } from 'src/amIAi/config/config.service';
+import { extractToken } from 'src/amIAi/utils/extractToken';
 
 @Injectable()
 export class AuthMiddleware implements NestMiddleware {
-  private readonly googleClient: OAuth2Client;
+  googleClient: OAuth2Client;
   private readonly googleClientId: string;
   constructor(
     private readonly appConfigService: AppConfigService,
@@ -26,19 +26,21 @@ export class AuthMiddleware implements NestMiddleware {
 
     if (!auth) throw new UnauthorizedException('Unauthorized');
 
-    const items = auth.split(' ');
-    const idToken = items[1];
+    const token = extractToken(auth as string);
 
-    if (!idToken) throw new UnauthorizedException('Unauthorized');
+    if (!token) throw new UnauthorizedException('Unauthorized');
 
-    const uid = await this.authService.validate(idToken);
+    try {
+      const user = await this.authService.validateAndReturnUserId(token);
 
-    if (!uid) throw new UnauthorizedException('Unauthorized');
+      if (!user) throw new UnauthorizedException('Unauthorized');
 
-    req.headers['x-user-id'] = uid;
+      req.headers['x-user-id'] = user.userId;
+      req.headers['x-language'] = user.language.toString();
 
-    Logger.log(`User ID: ${uid}`);
-
-    next();
+      next();
+    } catch (error) {
+      throw new UnauthorizedException('Unauthorized');
+    }
   }
 }

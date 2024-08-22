@@ -1,10 +1,13 @@
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
-import { WsException } from '@nestjs/websockets';
 import admin from 'firebase-admin';
+import { DecodedIdToken } from 'firebase-admin/auth';
+import { UserRepository } from 'src/amIAi/repository/user.repository';
 
 @Injectable()
 export class AuthService {
-  async validate(token: string) {
+  constructor(private readonly userRepository: UserRepository) {}
+
+  async validate(token: string): Promise<DecodedIdToken> {
     const decodedToken = await admin
       .auth()
       .verifyIdToken(token)
@@ -15,20 +18,19 @@ export class AuthService {
 
     if (!decodedToken) throw new UnauthorizedException();
 
-    return decodedToken.uid;
+    return decodedToken;
   }
 
-  async validateSocket(token: string) {
-    const decodedToken = await admin
-      .auth()
-      .verifyIdToken(token)
-      .catch(() => {
-        Logger.error('Unauthorized');
-        throw new WsException('Invalid credentials.');
-      });
+  async validateAndReturnUserId(
+    token: string,
+  ): Promise<{ userId: string; language: number }> {
+    const decodedToken = await this.validate(token);
+    if (!decodedToken) throw new UnauthorizedException();
 
-    if (!decodedToken) throw new WsException('Invalid credentials.');
+    const user = await this.userRepository.findByAuthenticationId(
+      decodedToken.uid,
+    );
 
-    return decodedToken.uid;
+    return { userId: user.id, language: user.language };
   }
 }

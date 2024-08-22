@@ -1,39 +1,44 @@
-import { MikroOrmModule } from '@mikro-orm/nestjs';
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { AuthMiddleware } from 'src/amIAi/auth/auth.middleware';
 import { AuthService } from 'src/amIAi/auth/auth.service';
 import { AppConfigModule } from 'src/amIAi/config/config.module';
-import { AppConfigService } from 'src/amIAi/config/config.service';
 import { GameController } from 'src/amIAi/controller/game.controller';
-import { Game } from 'src/amIAi/entities/Game';
-import { GameAnswer } from 'src/amIAi/entities/GameAnswer';
-import { GameQuestion } from 'src/amIAi/entities/GameQuestion';
-import { GameUser } from 'src/amIAi/entities/GameUser';
-import { Question } from 'src/amIAi/entities/Question';
-import { User } from 'src/amIAi/entities/User';
-import { AppGateway } from 'src/amIAi/gateway/app.gateway';
-import { MikroOrmConfigService } from 'src/amIAi/mikroOrmConfig/mikroOrmConfig.service';
+import { UserController } from 'src/amIAi/controller/user.controller';
+import { GenerativeAiClient } from 'src/amIAi/generativeAi/generativeAiClient';
+import { MikroOrmConfigModule } from 'src/amIAi/mikroOrmConfig/mikroOrmConfig.module';
+import { GameRepository } from 'src/amIAi/repository/game.repository';
+import { QuestionRepository } from 'src/amIAi/repository/question.repository';
+import { UserRepository } from 'src/amIAi/repository/user.repository';
+import { WaitingUserRepository } from 'src/amIAi/repository/waitingUser.repository';
 import { AnswerQuestionUseCase } from 'src/amIAi/usecase/game/answerQuestion.usecase';
-import { FindGameDataUseCase } from 'src/amIAi/usecase/game/findGameData.usecase';
-import { FindQuestionsUseCase } from 'src/amIAi/usecase/game/findQuestions.usecase';
+import { HealthCheckUseCase } from 'src/amIAi/usecase/game/healthCheck.usecase';
+import { MatchingUseCase } from 'src/amIAi/usecase/game/matching.usecase';
+import { ProgressUseCase } from 'src/amIAi/usecase/game/progress.usecase';
 import { StartGameUseCase } from 'src/amIAi/usecase/game/startGame.usecase';
+import { VoteUseCase } from 'src/amIAi/usecase/game/vote.usecase';
+import { CreateUserUsecase } from 'src/amIAi/usecase/user/createUser.usecase';
+import { FindMeUsecase } from 'src/amIAi/usecase/user/findMe.usecase';
+import { OnlineCheckUsecase } from 'src/amIAi/usecase/user/onlineCheck.usecase';
 
 @Module({
-  imports: [
-    AppConfigModule,
-    MikroOrmModule.forRootAsync({
-      imports: [AppConfigModule],
-      inject: [AppConfigService],
-      useFactory: (appConfigService: AppConfigService) => {
-        return new MikroOrmConfigService(appConfigService).getMikroOrmConfig();
-      },
-    }),
-    MikroOrmModule.forFeature({
-      entities: [Game, Question, User, GameUser, GameQuestion, GameAnswer],
-    }),
-  ],
-  controllers: [GameController],
+  imports: [AppConfigModule, MikroOrmConfigModule],
+  controllers: [GameController, UserController],
   providers: [
+    /**
+     * Generative AI
+     */
+    GenerativeAiClient,
+    /**
+     * Repository
+     */
+    UserRepository,
+    GameRepository,
+    WaitingUserRepository,
     /**
      * Auth
      */
@@ -41,18 +46,30 @@ import { StartGameUseCase } from 'src/amIAi/usecase/game/startGame.usecase';
     /**
      * Game
      */
-    FindGameDataUseCase,
     StartGameUseCase,
     AnswerQuestionUseCase,
-    FindQuestionsUseCase,
+    VoteUseCase,
+    MatchingUseCase,
+    ProgressUseCase,
+    HealthCheckUseCase,
     /**
-     * Websocket
+     * User
      */
-    AppGateway,
+    FindMeUsecase,
+    CreateUserUsecase,
+    OnlineCheckUsecase,
+
+    /**
+     * question
+     */
+    QuestionRepository,
   ],
 })
 export class AmIAiModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AuthMiddleware).forRoutes('*');
+    consumer
+      .apply(AuthMiddleware)
+      .exclude({ path: '/user', method: RequestMethod.POST })
+      .forRoutes('*');
   }
 }

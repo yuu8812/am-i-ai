@@ -8,4 +8,5 @@ export type Environment = {
   POSTGRES_PASSWORD: string;
   POSTGRES_DB: string;
   GOOGLE_CLIENT_ID: string;
+  GENERATIVE_AI_API_KEY: string;
 };

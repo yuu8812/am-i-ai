@@ -16,6 +16,7 @@ const CONTRACT = c.router(
   {
     baseHeaders: c.type<{
       'x-user-id'?: string;
+      'x-language'?: string;
     }>(),
   },
 );

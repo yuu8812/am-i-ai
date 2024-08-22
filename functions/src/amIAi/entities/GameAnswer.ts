@@ -21,7 +21,7 @@ export class GameAnswer extends BaseEntity {
   answer: string;
 
   @ManyToOne(() => GameQuestion)
-  question_id: GameQuestion;
+  question: GameQuestion;
 
   @ManyToOne(() => GameUser)
   gameUser: GameUser;

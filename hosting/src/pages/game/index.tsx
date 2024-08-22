@@ -1,5 +1,4 @@
 import { Suspense, lazy } from "react";
-import Skeleton from "src/component/Skeleton";
 
 const Solo = lazy(async () => {
   return import("src/pages/game/Solo");
@@ -9,9 +8,21 @@ const Multi = lazy(async () => {
   return import("src/pages/game/Multi");
 });
 
+const MultiPlay = lazy(async () => {
+  return import("src/pages/game/MultiPlay");
+});
+
+const Wait = lazy(async () => {
+  return import("src/pages/game/Wait");
+});
+
+const Vote = lazy(async () => {
+  return import("src/pages/game/Vote");
+});
+
 const LazySolo = () => {
   return (
-    <Suspense fallback={<Skeleton />}>
+    <Suspense fallback={<div />}>
       <Solo />
     </Suspense>
   );
@@ -19,10 +30,34 @@ const LazySolo = () => {
 
 const LazyMulti = () => {
   return (
-    <Suspense fallback={<Skeleton />}>
+    <Suspense fallback={<div />}>
       <Multi />
     </Suspense>
   );
 };
 
-export { LazySolo, LazyMulti };
+const LazyMultiPlay = () => {
+  return (
+    <Suspense fallback={<div />}>
+      <MultiPlay />
+    </Suspense>
+  );
+};
+
+const LazyWait = () => {
+  return (
+    <Suspense fallback={<div />}>
+      <Wait />
+    </Suspense>
+  );
+};
+
+const LazyVote = () => {
+  return (
+    <Suspense fallback={<div />}>
+      <Vote />
+    </Suspense>
+  );
+};
+
+export { LazySolo, LazyMulti, LazyMultiPlay, LazyWait, LazyVote };

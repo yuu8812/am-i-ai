@@ -4,53 +4,114 @@
  */
 import { MAX_ANSWER_STRING } from './constants';
 import { initContract } from '@ts-rest/core';
+import { SHORT_UUID_SCHEMA } from './validation/index';
 import { z } from 'zod';
 const c = initContract();
 
 export const GAME_CONTRACT = c.router({
+  /**
+   *  gameを開始するエンドポイント
+   * */
   startGame: {
     method: 'POST',
-    path: '/game/start',
+    path: '/game/startGame',
     responses: {
-      201: z.string(),
+      201: c.type<{
+        waitingUser: {
+          id: string;
+          userId: string;
+        };
+      }>(),
     },
     body: null,
   },
 
-  findQuestions: {
+  /**
+   *  マッチング中にアクセスするエンドポイント
+   * */
+  matching: {
     method: 'GET',
-    path: '/game/:gameId/questions',
+    path: '/game/matching/:waitingUserId',
     pathParams: z.object({
-      gameId: z.string().uuid(),
+      waitingUserId: SHORT_UUID_SCHEMA,
     }),
     responses: {
-      200: c.type<{ questions: { question: string; options: string[] }[] }>(),
+      200: c.type<{
+        gameId: string;
+        gameUserId: string;
+        gameUsers: { userId: string; userName: string; iconUrl: string }[];
+      }>(),
     },
   },
 
-  answerQuestion: {
-    method: 'POST',
-    path: '/game/:gameId/answer/:questionId',
+  /**
+   *  game中にgameDataを取得するエンドポイント
+   * */
+  progress: {
+    method: 'GET',
+    path: '/game/progress/:gameUserId',
     pathParams: z.object({
-      gameId: z.string().uuid(),
-      questionId: z.string().uuid(),
+      gameUserId: SHORT_UUID_SCHEMA,
     }),
     responses: {
-      201: z.string(),
+      200: c.type<{
+        gameId: string;
+        questions: {
+          id: string;
+          phase: number;
+          question: string;
+          shouldAnswerAt: Date;
+        }[];
+      }>(),
     },
+  },
+
+  /**
+   * game中にuserのonlineを確認するエンドポイント
+   */
+  healthCheck: {
+    method: 'GET',
+    path: '/game/health/:gameUserId',
+    pathParams: z.object({
+      gameUserId: SHORT_UUID_SCHEMA,
+    }),
+    responses: {
+      200: c.type<{
+        gameId: string;
+        gameUsers: { id: string; name: string; online: boolean }[];
+      }>(),
+    },
+  },
+
+  /**
+   *  questionに対して回答するエンドポイント
+   * */
+  answerQuestion: {
+    method: 'POST',
+    path: '/game/answer/:questionId',
+    pathParams: z.object({
+      questionId: SHORT_UUID_SCHEMA,
+    }),
     body: z.object({
       answer: MAX_ANSWER_STRING,
     }),
+    responses: {
+      201: null,
+    },
   },
 
-  findGameData: {
-    method: 'GET',
-    path: '/game/:gameId',
+  /**
+   *  questionに対して回答するエンドポイント
+   * */
+  vote: {
+    method: 'POST',
+    path: '/game/vote/:answerId',
     pathParams: z.object({
-      gameId: z.string().uuid(),
+      answerId: SHORT_UUID_SCHEMA,
     }),
+    body: null,
     responses: {
-      200: c.type<{ id: string }>(),
+      201: null,
     },
   },
 });

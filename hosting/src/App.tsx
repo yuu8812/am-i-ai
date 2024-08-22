@@ -12,9 +12,10 @@ import LazyHome from "src/pages/home";
 import { RecoilRoot } from "recoil";
 import Layout from "src/component/Layout";
 import GlobalLayout from "src/component/GlobalLayout";
-import { LazyMulti, LazySolo } from "src/pages/game";
+import { LazyMulti, LazyMultiPlay, LazyVote, LazyWait } from "src/pages/game";
 import { LazySetting } from "src/pages/setting";
 import { Suspense } from "react";
+import Skeleton from "src/component/Skeleton";
 
 const Router = () => {
   const location = useLocation();
@@ -25,15 +26,14 @@ const Router = () => {
         <Route element={<Layout />}>
           <Route index element={<LazyHome />} />
           <Route path="game">
-            <Route path="solo">
-              <Route index element={<LazySolo />} />
-              <Route path=":id" element={<LazySolo />} />
-            </Route>
             <Route path="multi">
               <Route index element={<LazyMulti />} />
-              <Route path=":id" element={<LazyMulti />} />
+              <Route path=":id">
+                <Route path="" element={<LazyMultiPlay />} />
+                <Route path="vote" element={<LazyVote />} />
+              </Route>
+              <Route path="waiting/:waitingUserId" element={<LazyWait />} />
             </Route>
-            <Route path="multi" element={<Link to="/">home</Link>} />
             <Route path="setting" element={<LazySetting />} />
           </Route>
         </Route>
@@ -49,7 +49,7 @@ const App = () => {
       <RecoilRoot>
         <AuthProvider>
           <BrowserRouter>
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<Skeleton />}>
               <Router />
             </Suspense>
           </BrowserRouter>

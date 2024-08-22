@@ -3,3 +3,18 @@ body {
   font-weight: 400;
   letter-spacing: 0.5px;
 }
+
+/* Webkit系ブラウザ（Chrome、Safariなど） */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* Firefox */
+body {
+  scrollbar-width: none; /* スクロールバーの幅をなくす */
+}
+
+/* IE, Edge */
+body {
+  -ms-overflow-style: none; /* スクロールバーを非表示にする */
+}

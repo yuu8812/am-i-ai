@@ -1,7 +1,7 @@
 import {
   Entity,
   EntityRepositoryType,
-  OneToOne,
+  ManyToOne,
   Property,
 } from '@mikro-orm/core';
 import { Game } from 'src/amIAi/entities/Game';
@@ -18,13 +18,17 @@ export class GameUser extends BaseEntity {
   status: 0 | 1 | 2 | 3;
 
   @Property({ default: 0 })
-  type: 0 | 1 | 2;
+  // 0: human, 1: ai
+  type: 0 | 1;
 
-  @OneToOne(() => Game)
+  @Property({ onCreate: () => new Date(), nullable: true })
+  onlineDetectedAt: Date;
+
+  @ManyToOne(() => Game)
   game: Game;
 
-  @OneToOne(() => User, { nullable: true })
-  user: User;
+  @ManyToOne(() => User, { nullable: true })
+  user?: User;
 
   [EntityRepositoryType]?: GameUserRepository;
 }

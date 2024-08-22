@@ -15,8 +15,8 @@ const Loading = ({ visible }: { visible: boolean }) => {
         >
           <div className="relative z-10">
             <BallTriangle
-              height="80"
-              width="80"
+              height="40"
+              width="40"
               visible={true}
               color="red"
               radius={5}

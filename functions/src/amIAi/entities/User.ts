@@ -1,10 +1,10 @@
-import { Entity, EntityRepositoryType, Property } from '@mikro-orm/core';
+import { Collection, Entity, OneToMany, Property } from '@mikro-orm/core';
+import { GameUser } from 'src/amIAi/entities/GameUser';
+import { WaitingUser } from 'src/amIAi/entities/WaitingUser';
 import { BaseEntity } from 'src/amIAi/entityHelper/base';
-import { UserRepository } from 'src/amIAi/repository/user.repository';
 
 @Entity({
   tableName: 'user',
-  repository: () => UserRepository,
 })
 export class User extends BaseEntity {
   @Property({ default: 0 })
@@ -16,8 +16,22 @@ export class User extends BaseEntity {
   @Property({ type: 'text' })
   name: string;
 
-  @Property({ default: 0 })
-  language: 0 | 1 | 2;
+  @Property({ type: 'text', nullable: true })
+  authentication_id: string;
 
-  [EntityRepositoryType]?: UserRepository;
+  @Property({ default: 0 })
+  // 0: 日本語, 1: 英語
+  language: 0 | 1;
+
+  @Property({ onCreate: () => new Date(), nullable: true })
+  onlineDetectedAt: Date;
+
+  @Property({ nullable: true })
+  iconUrl: string;
+
+  @OneToMany(() => GameUser, (gameUser) => gameUser.user)
+  gameUsers = new Collection<GameUser>(this);
+
+  @OneToMany(() => WaitingUser, (waitingUser) => waitingUser.user)
+  waitingUsers = new Collection<WaitingUser>(this);
 }

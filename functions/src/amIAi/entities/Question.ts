@@ -1,9 +1,12 @@
 import {
+  Collection,
   Entity,
   EntityRepositoryType,
   ManyToOne,
+  OneToMany,
   Property,
 } from '@mikro-orm/core';
+import { GameQuestion } from 'src/amIAi/entities/GameQuestion';
 import { User } from 'src/amIAi/entities/User';
 import { BaseEntity } from 'src/amIAi/entityHelper/base';
 import { QuestionRepository } from 'src/amIAi/repository/question.repository';
@@ -20,13 +23,18 @@ export class Question extends BaseEntity {
   question: string;
 
   @Property({ default: 0 })
+  // 0: admin
   createdBy: 0 | 1 | 2 | 3;
 
-  @Property({ default: 'en' })
-  language: 'en';
+  @Property({ default: 0 })
+  // 0: 日本語, 1: 英語
+  language: 0 | 1;
 
-  @ManyToOne(() => User)
-  createUser: User;
+  @ManyToOne(() => User, { nullable: true })
+  createdUser: User;
+
+  @OneToMany(() => GameQuestion, (gameQuestion) => gameQuestion.questions)
+  gameQuestions = new Collection<GameQuestion>(this);
 
   [EntityRepositoryType]?: QuestionRepository;
 }

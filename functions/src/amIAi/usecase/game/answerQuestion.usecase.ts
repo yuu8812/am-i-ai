@@ -11,7 +11,9 @@ export class AnswerQuestionUseCase {
   ): Promise<GameContractResponseShapes['answerQuestion']> {
     return {
       status: 201,
-      body: 'OK',
+      body: {
+        correct: true,
+      },
     };
   }
 }

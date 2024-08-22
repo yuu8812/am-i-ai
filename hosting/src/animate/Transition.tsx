@@ -5,9 +5,9 @@ const Transition = ({ children }: { children: ReactNode }) => {
   return (
     <motion.div
       animate={{ opacity: 1, x: 0 }}
-      initial={{ opacity: 0, x: -500 }}
-      exit={{ opacity: 0, x: 500 }}
-      transition={{ duration: 0.1 }}
+      initial={{ opacity: 0, x: -1000 }}
+      exit={{ opacity: 0, x: 1000 }}
+      transition={{ duration: 0.3 }}
       className="flex flex-1 flex-col"
     >
       {children}

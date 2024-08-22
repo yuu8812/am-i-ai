@@ -11,12 +11,9 @@ const c = initContract();
 export const USER_CONTRACT = c.router({
   getUser: {
     method: 'GET',
-    path: '/user/:id',
-    pathParams: z.object({
-      id: z.string().uuid(),
-    }),
+    path: '/user',
     responses: {
-      200: c.type<{ id: string; name: string }>(),
+      200: c.type<{ id: string; name: string; iconUrl: string }>(),
     },
   },
 
@@ -43,5 +40,17 @@ export const USER_CONTRACT = c.router({
     body: z.object({
       name: MAX_NAME_STRING,
     }),
+  },
+
+  onlineCheck: {
+    method: 'GET',
+    path: '/user/onlineCheck',
+    responses: {
+      201: z.object({
+        onlineUsersCount: z.number(),
+        waitingUsersCount: z.number(),
+        activeGameCount: z.number(),
+      }),
+    },
   },
 });

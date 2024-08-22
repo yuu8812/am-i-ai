@@ -10,17 +10,21 @@ import { MikroORM } from '@mikro-orm/core';
 import * as serviceAccount from 'src/amIAi/firebase.json';
 
 import { AppConfigService } from 'src/amIAi/config/config.service';
+import { getApps } from 'firebase-admin/app';
 
 export const server = express();
 
 const init = async () => {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
-  });
+  getApps().length === 0 &&
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
+    });
+
   Logger.log(
     `firebase: ${await (admin as any).app().options.credential
       .projectId} has been initialized`,
   );
+
   const app = await NestFactory.create(AmIAiModule, new ExpressAdapter(server));
   const configService = app.get(AppConfigService);
   const allowOrigins = configService.get('ALLOW_ORIGINS').split(' ');

@@ -18,7 +18,7 @@ export class Vote extends BaseEntity {
   type: 0 | 1 | 2;
 
   @ManyToOne(() => GameUser)
-  game_user: GameUser;
+  gameUser: GameUser;
 
   @ManyToOne(() => GameAnswer)
   gameAnswer: GameAnswer;

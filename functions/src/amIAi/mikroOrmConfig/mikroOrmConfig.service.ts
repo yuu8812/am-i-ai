@@ -25,6 +25,8 @@ export class MikroOrmConfigService {
       entitiesTs: ['./src/amIAi/entities'],
       driver: PostgreSqlDriver,
       clientUrl: this.defineClientUrl(),
+      autoLoadEntities: true,
+      autoJoinOneToOneOwner: true,
     };
   }
 }
