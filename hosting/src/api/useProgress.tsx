@@ -16,7 +16,10 @@ const useProgress = (gameUserId: string) => {
         params: {
           gameUserId: gameUserId,
         },
-      })
+      }),
+    {
+      revalidateOnFocus: false,
+    }
   );
 
   const typedData = data?.body as ProgressResponse | undefined;

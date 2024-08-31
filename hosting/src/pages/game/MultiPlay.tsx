@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Transition from "src/animate/Transition";
 import useProgress, { ProgressResponse } from "src/api/useProgress";
@@ -9,8 +9,14 @@ import OnlineBadge from "src/component/OnlineBadge";
 import TextArea from "src/component/TextArea";
 import TextAreaPlaceHolder from "src/component/TextAreaPlaceholder";
 import TitleArea from "src/component/TitleArea";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import useHealthCheck from "src/api/useHealthCheck";
+import useIsAnswered from "src/api/useIsAnswered";
+import Pop from "src/component/Pop";
+import useAnswerQuestion from "src/api/useAnswerQuestion";
+import { FaCheck } from "react-icons/fa";
+import DefaultToast from "src/toast/DefaultToast";
+import toast from "react-hot-toast";
 
 const variants = {
   show: {
@@ -30,18 +36,63 @@ const variants = {
 const MultiPlay = () => {
   const [currentQuestion, setCurrentQuestion] =
     useState<ProgressResponse["questions"][number]>();
-  const [currentPhase, setCurrentPhase] = useState<number>(0);
-  const { id: gameUserId } = useParams();
+  const [value, setValue] = useState<string>("");
+
+  const { gameUserId } = useParams();
   const { data: progress } = useProgress(gameUserId as string);
   const { data: health } = useHealthCheck(gameUserId as string);
+  const { data: check, mutate } = useIsAnswered({
+    gameUserId: gameUserId as string,
+    questionId: currentQuestion?.id,
+  });
+  const { answer } = useAnswerQuestion();
+
   const navigate = useNavigate();
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const dateOver =
-    progress &&
-    progress.questions[currentPhase]?.shouldAnswerAt &&
-    new Date(progress.questions[currentPhase]?.shouldAnswerAt) < new Date();
+  const dateOver = useMemo(
+    () =>
+      !!(
+        progress &&
+        currentQuestion &&
+        progress.questions[currentQuestion.phase]?.shouldAnswerAt &&
+        new Date(progress.questions[currentQuestion.phase]?.shouldAnswerAt) <
+          new Date()
+      ),
+    [progress, currentQuestion]
+  );
+
+  const isAnswered = useMemo(() => check?.isAnswered === true, [check]);
+
+  const canAnswer = useMemo(
+    () =>
+      !!progress && !!health && !!currentQuestion && !isAnswered && !dateOver,
+    [progress, health, currentQuestion, isAnswered, dateOver]
+  );
+
+  const reset = useCallback(() => {
+    setValue("");
+  }, []);
+
+  const handleAnswer = useCallback(async () => {
+    if (!currentQuestion || !value) return;
+    await answer({
+      questionId: currentQuestion.id,
+      answer: value,
+      gameUserId: gameUserId as string,
+    });
+    await mutate();
+    toast.success(
+      <DefaultToast
+        twClassName="w-60"
+        message="Your answer has been submitted!!"
+      />,
+      {
+        id: "answer_succeed_modal",
+      }
+    );
+  }, [answer, currentQuestion, value, mutate, gameUserId]);
 
   const navigateVote = useCallback(() => {
     navigate("vote", { replace: true });
@@ -49,18 +100,14 @@ const MultiPlay = () => {
 
   const updateCurrentQuestion = useCallback(() => {
     if (!progress) return;
-    if (!dateOver) return;
     if (!health) return;
-    setCurrentPhase((prev) => {
-      const next = prev + 1;
-      setCurrentQuestion(progress.questions[next]);
-      return next;
-    });
-    if (currentPhase === progress.questions.length - 1 && currentPhase !== 0) {
-      return navigateVote();
-    }
+    if (!currentQuestion) return;
+    if (currentQuestion.phase === progress.questions.length - 1) navigateVote();
+    reset();
+    setCurrentQuestion((prev) => progress.questions[(prev?.phase ?? 0) + 1]);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigate, dateOver, progress]);
+  }, [dateOver, progress, currentQuestion, reset, navigateVote]);
 
   const findCurrentQuestion = useCallback(() => {
     if (!progress || progress.questions.length === 0) return;
@@ -78,9 +125,12 @@ const MultiPlay = () => {
         return prev;
       }
     );
-
     return currentQuestion;
   }, [progress]);
+
+  const onEnd = useCallback(() => {
+    updateCurrentQuestion();
+  }, [updateCurrentQuestion]);
 
   const setUp = useCallback(() => {
     if (!progress) return;
@@ -88,16 +138,16 @@ const MultiPlay = () => {
     const currentQuestion = findCurrentQuestion();
     if (!currentQuestion) return;
     setCurrentQuestion(currentQuestion);
-    setCurrentPhase(currentQuestion.phase);
   }, [progress, findCurrentQuestion]);
+
+  const handleBeforeEnd = useCallback(() => {
+    if (!value) return;
+    handleAnswer();
+  }, [handleAnswer, value]);
 
   useEffect(() => {
     setUp();
   }, [setUp]);
-
-  useEffect(() => {
-    updateCurrentQuestion();
-  }, [updateCurrentQuestion]);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -129,7 +179,8 @@ const MultiPlay = () => {
           {progress.questions.length > 0 && currentQuestion && (
             <div className="flex flex-1 flex-col">
               <div className="text-white mb-4 mt-6">
-                Question {currentPhase + 1} / {progress.questions.length}
+                Question {currentQuestion.phase + 1} /{" "}
+                {progress.questions.length}
               </div>
               <motion.div
                 key={currentQuestion.question}
@@ -146,22 +197,47 @@ const MultiPlay = () => {
               </motion.div>
               <div className="flex h-40 w-[80%] self-center mt-10">
                 <div className="flex flex-col flex-1">
-                  <div className="flex items-center gap-2 text-white">
-                    <div>Please answer in</div>
+                  <div className="flex items-center gap-2 text-white pb-2 pl-8">
+                    <div className="">
+                      Please {isAnswered ? "wait" : "answer in"}
+                    </div>
                     <CountDown
                       date={new Date(currentQuestion.shouldAnswerAt)}
+                      onEnd={onEnd}
+                      onBeforeEnd={handleBeforeEnd}
                     />
                     <div className="">seconds</div>
                   </div>
-                  {!dateOver ? (
-                    <TextArea inputRef={inputRef} ref={inputRef} />
-                  ) : (
-                    <TextAreaPlaceHolder message="回答は締め切られました" />
-                  )}
+                  <div className="flex flex-1 items-center gap-2">
+                    <div className="w-6">
+                      {isAnswered && <FaCheck size={20} color="green" />}
+                    </div>
+                    {!dateOver ? (
+                      <TextArea
+                        inputRef={inputRef}
+                        ref={inputRef}
+                        value={value}
+                        onChange={(e) => setValue(e.target.value)}
+                        editable={!isAnswered}
+                      />
+                    ) : (
+                      <TextAreaPlaceHolder message="回答は締め切られました" />
+                    )}
+                  </div>
+                  <div className="h-20 flex flex-1 self-center">
+                    <AnimatePresence>
+                      {!isAnswered && <Pop text="Answer here" type="top" />}
+                    </AnimatePresence>
+                  </div>
                 </div>
               </div>
               <div className="self-center my-10">
-                <Button message="Submit" width="w-60" disabled={dateOver} />
+                <Button
+                  message="Submit"
+                  width="w-60"
+                  disabled={!canAnswer}
+                  onCLick={handleAnswer}
+                />
               </div>
             </div>
           )}

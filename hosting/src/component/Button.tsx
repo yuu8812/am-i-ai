@@ -29,14 +29,14 @@ const Button = ({
       disabled={disabled}
       className={`${
         disabled || isLoading
-          ? "bg-gray-300 opacity-20"
+          ? "bg-gray-300 opacity-80"
           : "bg-gradient-to-r from-red-500 to-red-700"
       } flex-1 h-12 relative flex items-center justify-center font-bold text-white rounded-full shadow-md group ${width}`}
     >
       <span
         className={`${
           disabled || isLoading
-            ? "bg-gray-50 opacity-20"
+            ? "bg-gray-50 opacity-80"
             : "group-hover:scale-100 bg-red-50"
         } absolute inset-0 flex items-center justify-center w-full rounded-full h-full text-white transition-all duration-300 transform scale-0 group-hover:scale-100 ease`}
       />

@@ -7,6 +7,9 @@ import CONTRACT from 'src/amIAi/contract/rest';
 import { VoteUseCase } from 'src/amIAi/usecase/game/vote.usecase';
 import { MatchingUseCase } from 'src/amIAi/usecase/game/matching.usecase';
 import { ProgressUseCase } from 'src/amIAi/usecase/game/progress.usecase';
+import { GetAnswersUseCase } from 'src/amIAi/usecase/game/getAnswers.usecase';
+import { IsAnsweredUseCase } from 'src/amIAi/usecase/game/isAnswered.usecase';
+import { IsVotedUseCase } from 'src/amIAi/usecase/game/isVoted.usecase';
 
 @Controller()
 export class GameController {
@@ -17,6 +20,9 @@ export class GameController {
     private readonly matchingUseCase: MatchingUseCase,
     private readonly progressUseCase: ProgressUseCase,
     private readonly healthCheckUseCase: HealthCheckUseCase,
+    private readonly getAnswersUseCase: GetAnswersUseCase,
+    private readonly isAnsweredUseCase: IsAnsweredUseCase,
+    private readonly isVotedUseCase: IsVotedUseCase,
   ) {}
 
   @TsRestHandler(CONTRACT.GAMES)
@@ -39,6 +45,15 @@ export class GameController {
       },
       healthCheck: async (param) => {
         return await this.healthCheckUseCase.execute(param);
+      },
+      getAnswers: async (param) => {
+        return await this.getAnswersUseCase.execute(param);
+      },
+      isAnswered: async (param) => {
+        return await this.isAnsweredUseCase.execute(param);
+      },
+      isVoted: async (param) => {
+        return await this.isVotedUseCase.execute(param);
       },
     });
   }

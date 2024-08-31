@@ -88,11 +88,12 @@ export const GAME_CONTRACT = c.router({
    * */
   answerQuestion: {
     method: 'POST',
-    path: '/game/answer/:questionId',
+    path: '/game/answer/:gameUserId',
     pathParams: z.object({
-      questionId: SHORT_UUID_SCHEMA,
+      gameUserId: SHORT_UUID_SCHEMA,
     }),
     body: z.object({
+      questionId: SHORT_UUID_SCHEMA,
       answer: MAX_ANSWER_STRING,
     }),
     responses: {
@@ -112,6 +113,73 @@ export const GAME_CONTRACT = c.router({
     body: null,
     responses: {
       201: null,
+    },
+  },
+
+  /**
+   * game中に回答を取得するエンドポイント
+   */
+  getAnswers: {
+    method: 'GET',
+    path: '/game/answers/:gameUserId',
+    pathParams: z.object({
+      gameUserId: SHORT_UUID_SCHEMA,
+    }),
+    responses: {
+      200: c.type<{
+        gameId: string;
+        shouldAnswerAt: Date;
+        gameQuestions: {
+          id: string;
+          question: {
+            id: string;
+            question: string;
+          };
+          answers: {
+            id: string;
+            answer: string;
+            gameUserId: string;
+            user: {
+              id: string;
+            };
+          }[];
+        }[];
+      }>(),
+    },
+  },
+
+  /**
+   * 現在の質問に答えたかを取得するエンドポイント
+   */
+  isAnswered: {
+    method: 'GET',
+    path: '/game/isAnswered/:gameUserId',
+    pathParams: z.object({
+      gameUserId: SHORT_UUID_SCHEMA,
+    }),
+    query: z.object({
+      questionId: SHORT_UUID_SCHEMA,
+    }),
+    responses: {
+      200: c.type<{
+        isAnswered: boolean;
+      }>(),
+    },
+  },
+
+  /**
+   * 投票をしたか確認するエンドポイント
+   */
+  isVoted: {
+    method: 'GET',
+    path: '/game/isVoted/:gameUserId',
+    pathParams: z.object({
+      gameUserId: SHORT_UUID_SCHEMA,
+    }),
+    responses: {
+      200: c.type<{
+        isVoted: boolean;
+      }>(),
     },
   },
 });

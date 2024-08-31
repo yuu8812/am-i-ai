@@ -6,21 +6,21 @@ import {
 import { GameRepository } from 'src/amIAi/repository/game.repository';
 
 @Injectable()
-export class AnswerQuestionUseCase {
+export class IsAnsweredUseCase {
   constructor(private readonly gameRepository: GameRepository) {}
-
   async execute(
-    param: GameContractRequestShapes['answerQuestion'],
-  ): Promise<GameContractResponseShapes['answerQuestion']> {
-    const response = await this.gameRepository.answerQuestion({
+    param: GameContractRequestShapes['isAnswered'],
+  ): Promise<GameContractResponseShapes['isAnswered']> {
+    const response = await this.gameRepository.isAnswered({
       gameUserId: param.params.gameUserId,
-      questionId: param.body.questionId,
-      answer: param.body.answer,
+      questionId: param.query.questionId,
     });
 
     return {
-      status: 201,
-      body: response,
+      status: 200,
+      body: {
+        isAnswered: response,
+      },
     };
   }
 }

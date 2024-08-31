@@ -4,7 +4,7 @@ import { Toaster } from "react-hot-toast";
 const GlobalLayout = ({ children }: { children: ReactNode }) => {
   return (
     <div className="flex flex-1 flex-row w-screen h-screen">
-      {children}
+      <div className="relative z-50 flex flex-1 flex-col">{children}</div>
       <Toaster
         toastOptions={{
           style: {

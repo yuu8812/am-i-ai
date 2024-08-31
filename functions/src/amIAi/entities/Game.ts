@@ -25,6 +25,9 @@ export class Game extends BaseEntity {
   @Property({ default: 0 })
   aiCount: number;
 
+  @Property({ nullable: true })
+  shouldAnswerAt: Date;
+
   @OneToMany(() => GameUser, (gameUser) => gameUser.game)
   gameUsers = new Collection<GameUser>(this);
 

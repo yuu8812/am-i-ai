@@ -16,7 +16,10 @@ import { QuestionRepository } from 'src/amIAi/repository/question.repository';
 import { UserRepository } from 'src/amIAi/repository/user.repository';
 import { WaitingUserRepository } from 'src/amIAi/repository/waitingUser.repository';
 import { AnswerQuestionUseCase } from 'src/amIAi/usecase/game/answerQuestion.usecase';
+import { GetAnswersUseCase } from 'src/amIAi/usecase/game/getAnswers.usecase';
 import { HealthCheckUseCase } from 'src/amIAi/usecase/game/healthCheck.usecase';
+import { IsAnsweredUseCase } from 'src/amIAi/usecase/game/isAnswered.usecase';
+import { IsVotedUseCase } from 'src/amIAi/usecase/game/isVoted.usecase';
 import { MatchingUseCase } from 'src/amIAi/usecase/game/matching.usecase';
 import { ProgressUseCase } from 'src/amIAi/usecase/game/progress.usecase';
 import { StartGameUseCase } from 'src/amIAi/usecase/game/startGame.usecase';
@@ -52,6 +55,9 @@ import { OnlineCheckUsecase } from 'src/amIAi/usecase/user/onlineCheck.usecase';
     MatchingUseCase,
     ProgressUseCase,
     HealthCheckUseCase,
+    GetAnswersUseCase,
+    IsAnsweredUseCase,
+    IsVotedUseCase,
     /**
      * User
      */

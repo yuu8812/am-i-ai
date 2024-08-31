@@ -1,11 +1,15 @@
 import {
+  Collection,
   Entity,
   EntityRepositoryType,
   ManyToOne,
+  OneToMany,
   Property,
 } from '@mikro-orm/core';
 import { Game } from 'src/amIAi/entities/Game';
+import { GameAnswer } from 'src/amIAi/entities/GameAnswer';
 import { User } from 'src/amIAi/entities/User';
+import { Vote } from 'src/amIAi/entities/Vote';
 import { BaseEntity } from 'src/amIAi/entityHelper/base';
 import { GameUserRepository } from 'src/amIAi/repository/gameUser.repository';
 
@@ -29,6 +33,15 @@ export class GameUser extends BaseEntity {
 
   @ManyToOne(() => User, { nullable: true })
   user?: User;
+
+  @OneToMany(() => Vote, (vote) => vote.voteBy)
+  voteBys = new Collection<Vote>(this);
+
+  @OneToMany(() => Vote, (vote) => vote.voteTo)
+  voteTos = new Collection<Vote>(this);
+
+  @OneToMany(() => GameAnswer, (gameAnswer) => gameAnswer.gameUser)
+  gameAnswers = new Collection<GameAnswer>(this);
 
   [EntityRepositoryType]?: GameUserRepository;
 }

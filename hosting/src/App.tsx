@@ -28,7 +28,7 @@ const Router = () => {
           <Route path="game">
             <Route path="multi">
               <Route index element={<LazyMulti />} />
-              <Route path=":id">
+              <Route path=":gameUserId">
                 <Route path="" element={<LazyMultiPlay />} />
                 <Route path="vote" element={<LazyVote />} />
               </Route>

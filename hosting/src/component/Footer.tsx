@@ -27,8 +27,8 @@ const FOOTER_LINKS = [
 
 const Footer = () => {
   return (
-    <div className="h-56 bg-slate-200">
-      <div className="flex px-16 py-12 justify-between text-sm text-slate-600">
+    <div className="h-80 bg-slate-50">
+      <div className="flex px-16 py-12 justify-between text-sm text-black">
         {FOOTER_LINKS.map((link) => {
           return (
             <div className="" key={link.name}>

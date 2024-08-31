@@ -6,6 +6,7 @@ import { GameQuestion } from 'src/amIAi/entities/GameQuestion';
 import { GameUser } from 'src/amIAi/entities/GameUser';
 import { Question } from 'src/amIAi/entities/Question';
 import { User } from 'src/amIAi/entities/User';
+import { Vote } from 'src/amIAi/entities/Vote';
 import { WaitingUser } from 'src/amIAi/entities/WaitingUser';
 @Injectable()
 export class GameRepository {
@@ -278,7 +279,7 @@ export class GameRepository {
     gameId: string;
     gameUsers: { id: string; name: string; online: boolean }[];
   }> {
-    Logger.log('進行中のゲームの情報を取得して返却する関数', 'progress');
+    Logger.log('healthCheck', 'healthCheck');
     const forkedEm = this.em.fork();
 
     const userJoinedGame = await forkedEm.findOne(Game, {
@@ -413,19 +414,22 @@ export class GameRepository {
 
     return {
       gameId: game.id,
-      questions: game.gameQuestions.getItems().map((gameQuestion) => ({
-        id: gameQuestion.id,
-        phase: gameQuestion.phase,
-        question: gameQuestion.questions.question,
-        shouldAnswerAt: gameQuestion.shouldAnswerAt,
-        answers: gameQuestion.gameAnswers.getItems().map((gameAnswer) => ({
-          id: gameAnswer.id,
-          user: {
-            id: gameAnswer.gameUser.user.id,
-          },
-          answered: gameAnswer.gameUser.id === gameUserId,
-        })),
-      })),
+      questions: game.gameQuestions
+        .getItems()
+        .map((gameQuestion) => ({
+          id: gameQuestion.id,
+          phase: gameQuestion.phase,
+          question: gameQuestion.questions.question,
+          shouldAnswerAt: gameQuestion.shouldAnswerAt,
+          answers: gameQuestion.gameAnswers.getItems().map((gameAnswer) => ({
+            id: gameAnswer.id,
+            user: {
+              id: gameAnswer.gameUser.user.id,
+            },
+            answered: gameAnswer.gameUser.id === gameUserId,
+          })),
+        }))
+        .sort((a, b) => a.phase - b.phase),
     };
   }
 
@@ -448,11 +452,11 @@ export class GameRepository {
    *
    */
   async answerQuestion({
-    userId,
+    gameUserId,
     questionId,
     answer,
   }: {
-    userId: string;
+    gameUserId: string;
     questionId: string;
     answer: string;
   }): Promise<void> {
@@ -461,7 +465,7 @@ export class GameRepository {
 
     const userJoinedGame = await forkedEm.findOne(Game, {
       gameUsers: {
-        id: userId,
+        id: gameUserId,
       },
     });
 
@@ -475,23 +479,20 @@ export class GameRepository {
       GameQuestion,
       {
         id: questionId,
-        gameAnswers: {
-          gameUser: {
-            user: {
-              id: userId,
-            },
-          },
-        },
       },
       {
-        populate: ['gameAnswers'],
+        populate: ['gameAnswers', 'gameAnswers.gameUser'],
       },
     );
 
     if (!gameQuestion)
       throw new HttpException('Question is not found', HttpStatus.BAD_REQUEST);
 
-    if (gameQuestion.gameAnswers.getItems().length > 0)
+    if (
+      gameQuestion.gameAnswers
+        .getItems()
+        .filter((item) => item.gameUser.id === gameUserId).length > 0
+    )
       throw new HttpException(
         'Question is already answered',
         HttpStatus.BAD_REQUEST,
@@ -504,18 +505,17 @@ export class GameRepository {
       );
 
     forkedEm.create(GameAnswer, {
-      question: {
-        id: questionId,
-      },
-      gameUser: {
-        id: userId,
-      },
-      answer,
+      gameUser: gameUserId,
+      question: questionId,
+      answer: answer ?? '',
     });
 
     await forkedEm.flush();
   }
 
+  /**
+   *
+   */
   async createGameQuestion(gameId: string, questionCount: number) {
     const forkedEm = this.em.fork();
 
@@ -538,6 +538,102 @@ export class GameRepository {
       });
     });
 
+    const game = await forkedEm.findOne(Game, { id: gameId });
+
+    // 最後の質問の回答時間+20秒を設定
+    game.shouldAnswerAt = new Date(
+      Date.now() + (questionCount + 2) * 20000 + 3000,
+    );
+
     await forkedEm.flush();
+  }
+
+  async getAnswers({
+    userId,
+    gameUserId,
+  }: {
+    userId: string;
+    gameUserId: string;
+  }) {
+    const forkedEm = this.em.fork();
+
+    Logger.log('userId', userId);
+    Logger.log('gameUserId', gameUserId);
+
+    const game = await forkedEm.findOne(
+      Game,
+      {
+        gameUsers: {
+          id: gameUserId,
+        },
+      },
+      {
+        populate: [
+          'gameQuestions',
+          'gameQuestions.questions',
+          'gameQuestions.gameAnswers',
+          'gameQuestions.gameAnswers.answer',
+          'gameQuestions.gameAnswers.gameUser.user',
+        ],
+      },
+    );
+
+    if (!game)
+      throw new HttpException('Game is not found', HttpStatus.BAD_REQUEST);
+
+    const builded = {
+      gameId: game.id,
+      shouldAnswerAt: game.shouldAnswerAt,
+      gameQuestions: game.gameQuestions.getItems().map((gameQuestion) => ({
+        id: gameQuestion.id,
+        question: {
+          id: gameQuestion.questions.id,
+          question: gameQuestion.questions.question,
+        },
+        answers: gameQuestion.gameAnswers.getItems().map((gameAnswer) => ({
+          id: gameAnswer.id,
+          answer: gameAnswer.answer,
+          gameUserId: gameAnswer.gameUser.id,
+          user: {
+            id: gameAnswer.gameUser.user.id,
+          },
+        })),
+      })),
+    };
+
+    return builded;
+  }
+
+  async isAnswered({
+    gameUserId,
+    questionId,
+  }: {
+    gameUserId: string;
+    questionId: string;
+  }) {
+    const forkedEm = this.em.fork();
+
+    const gameAnswer = await forkedEm.findOne(GameAnswer, {
+      gameUser: {
+        id: gameUserId,
+      },
+      question: {
+        id: questionId,
+      },
+    });
+
+    return !!gameAnswer;
+  }
+
+  async isVoted(gameUserId: string) {
+    const forkedEm = this.em.fork();
+
+    const gameAnswer = await forkedEm.findOne(Vote, {
+      voteBy: {
+        id: gameUserId,
+      },
+    });
+
+    return !!gameAnswer;
   }
 }

@@ -39,7 +39,7 @@ const NavBar = () => {
                 key={pathInfo.route}
                 to={pathInfo.route}
                 className={({ isActive }) =>
-                  `relative w-full px-4 py-2 rounded-lg transition-all duration-300 gap-2 flex items-center hover:scale-105 ${
+                  `relative w-full px-4 py-3 shadow-2xl shadow-red-600 transition-all duration-300 gap-2 flex items-center hover:scale-105 ${
                     isActive
                       ? "text-white bg-gradient-to-r from-red-500 to-red-700"
                       : "text-black bg-white border-transparent hover:border-red-500"

@@ -2,6 +2,7 @@ body {
   font-family: "Open Sans", sans-serif;
   font-weight: 400;
   letter-spacing: 0.5px;
+  background-color: rgb(210, 210, 210);
 }
 
 /* Webkit系ブラウザ（Chrome、Safariなど） */
