@@ -11,6 +11,7 @@ import { GameController } from 'src/amIAi/controller/game.controller';
 import { UserController } from 'src/amIAi/controller/user.controller';
 import { GenerativeAiClient } from 'src/amIAi/generativeAi/generativeAiClient';
 import { MikroOrmConfigModule } from 'src/amIAi/mikroOrmConfig/mikroOrmConfig.module';
+import { AiUserRepository } from 'src/amIAi/repository/aiUser.repository';
 import { GameRepository } from 'src/amIAi/repository/game.repository';
 import { QuestionRepository } from 'src/amIAi/repository/question.repository';
 import { UserRepository } from 'src/amIAi/repository/user.repository';
@@ -22,8 +23,10 @@ import { IsAnsweredUseCase } from 'src/amIAi/usecase/game/isAnswered.usecase';
 import { IsVotedUseCase } from 'src/amIAi/usecase/game/isVoted.usecase';
 import { MatchingUseCase } from 'src/amIAi/usecase/game/matching.usecase';
 import { ProgressUseCase } from 'src/amIAi/usecase/game/progress.usecase';
+import { ResultUseCase } from 'src/amIAi/usecase/game/result.usecase';
 import { StartGameUseCase } from 'src/amIAi/usecase/game/startGame.usecase';
 import { VoteUseCase } from 'src/amIAi/usecase/game/vote.usecase';
+import { InitializeUseCase } from 'src/amIAi/usecase/init/initiaize.usecase';
 import { CreateUserUsecase } from 'src/amIAi/usecase/user/createUser.usecase';
 import { FindMeUsecase } from 'src/amIAi/usecase/user/findMe.usecase';
 import { OnlineCheckUsecase } from 'src/amIAi/usecase/user/onlineCheck.usecase';
@@ -42,6 +45,7 @@ import { OnlineCheckUsecase } from 'src/amIAi/usecase/user/onlineCheck.usecase';
     UserRepository,
     GameRepository,
     WaitingUserRepository,
+    AiUserRepository,
     /**
      * Auth
      */
@@ -58,6 +62,7 @@ import { OnlineCheckUsecase } from 'src/amIAi/usecase/user/onlineCheck.usecase';
     GetAnswersUseCase,
     IsAnsweredUseCase,
     IsVotedUseCase,
+    ResultUseCase,
     /**
      * User
      */
@@ -69,6 +74,11 @@ import { OnlineCheckUsecase } from 'src/amIAi/usecase/user/onlineCheck.usecase';
      * question
      */
     QuestionRepository,
+
+    /**
+     * init
+     */
+    InitializeUseCase,
   ],
 })
 export class AmIAiModule implements NestModule {

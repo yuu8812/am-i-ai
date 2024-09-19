@@ -27,17 +27,13 @@ const FOOTER_LINKS = [
 
 const Footer = () => {
   return (
-    <div className="h-80 bg-slate-50">
-      <div className="flex px-16 py-12 justify-between text-sm text-black">
-        {FOOTER_LINKS.map((link) => {
-          return (
-            <div className="" key={link.name}>
-              {link.name}
-            </div>
-          );
-        })}
+    <footer className="text-center">
+      <div className="m-4 bg-gray-800 py-6">
+        <p className="text-gray-400">
+          &copy; 2024 AI-ness & Human Detection. All rights reserved.
+        </p>
       </div>
-    </div>
+    </footer>
   );
 };
 

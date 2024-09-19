@@ -1,8 +1,16 @@
 import { EntityManager, raw } from '@mikro-orm/postgresql';
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import {
+  GAME_RATE_TYPE,
+  IS_VOTED,
+  LANGUAGE,
+  WHICH_USER,
+} from 'src/amIAi/constants/game';
+import { AiUser } from 'src/amIAi/entities/AiUser';
 import { Game } from 'src/amIAi/entities/Game';
 import { GameAnswer } from 'src/amIAi/entities/GameAnswer';
 import { GameQuestion } from 'src/amIAi/entities/GameQuestion';
+import { GameRate } from 'src/amIAi/entities/GameRate';
 import { GameUser } from 'src/amIAi/entities/GameUser';
 import { Question } from 'src/amIAi/entities/Question';
 import { User } from 'src/amIAi/entities/User';
@@ -22,11 +30,7 @@ export class GameRepository {
    *
    * @throws HttpException(409, 'User is already waiting')
    */
-  async startGame(userId: string, language: 0 | 1) {
-    Logger.log(
-      'ユーザがゲームを開始した時にそのユーザをwaitingUserテーブルに登録する関数',
-      'startGame',
-    );
+  async startGame(userId: string, language: 'ja' | 'en') {
     const forkedEm = this.em.fork();
 
     const alreadyJoinedUser = await forkedEm.findOne(GameUser, {
@@ -51,7 +55,7 @@ export class GameRepository {
 
     const waitingUser = forkedEm.create(WaitingUser, {
       user: userId,
-      language,
+      language: language === 'ja' ? LANGUAGE.JP : LANGUAGE.EN,
     });
 
     await forkedEm.persistAndFlush(waitingUser);
@@ -68,7 +72,6 @@ export class GameRepository {
    * ゲームに登録しているユーザを返却する関数
    * 5秒以内にそのユーザがwaitingUserに登録している場合にエラーを返す
    * @param userId
-   * @param language 0: 日本語, 1: 英語
    * @returns gameUsers: { userId: string; userName: string; online: boolean }[];
    *
    */
@@ -85,9 +88,7 @@ export class GameRepository {
       iconUrl: string;
     }[];
   }> {
-    Logger.log('ゲームに登録しているユーザを返却する関数', 'getGameUsers');
     const forkedEm = this.em.fork();
-    Logger.log('gameId', gameId);
 
     if (!gameId)
       throw new HttpException('GameId is not provided', HttpStatus.BAD_REQUEST);
@@ -96,6 +97,7 @@ export class GameRepository {
       GameUser,
       {
         game: gameId,
+        whichUser: WHICH_USER.HUMAN,
       },
       {
         populate: ['user'],
@@ -120,6 +122,32 @@ export class GameRepository {
     };
   }
 
+  async createAiGameUsers({
+    gameId,
+    aiCount,
+  }: {
+    gameId: string;
+    aiCount: number;
+  }) {
+    const forkedEm = this.em.fork();
+
+    const aiUsers = await forkedEm.find(AiUser, {});
+
+    const randomAiUsers = aiUsers
+      .sort(() => Math.random() - 0.5)
+      .slice(0, aiCount);
+
+    randomAiUsers.map((aiUser) => {
+      forkedEm.create(GameUser, {
+        game: gameId,
+        aiUser: aiUser.id,
+        whichUser: WHICH_USER.AI,
+      });
+    });
+
+    forkedEm.flush();
+  }
+
   /**
    * ユーザのマッチングロジックを実行する関数
    *
@@ -139,16 +167,13 @@ export class GameRepository {
    */
   async matching({
     humanCount,
-    language,
     userId,
     waitingUserId,
   }: {
     userId: string;
-    language: 0 | 1;
     humanCount: number;
     waitingUserId: string;
   }) {
-    Logger.log('ユーザのマッチングロジックを実行する関数', 'matching');
     const forkedEm = this.em.fork();
 
     const gameUser = await forkedEm.findOne(
@@ -176,6 +201,9 @@ export class GameRepository {
       },
     );
 
+    if (waitingUser.user.id !== userId)
+      throw new HttpException('User is not waiting', HttpStatus.BAD_REQUEST);
+
     // // 5秒以内にonlineDetectedAtを更新している場合にすぐにかえす
     if (gameUser) {
       gameUser.onlineDetectedAt = new Date();
@@ -199,7 +227,7 @@ export class GameRepository {
       .having('COUNT(gu.id) = 1') // gameUsers の数が1のゲームを取得
       .andWhere({
         $and: [
-          { language },
+          { language: waitingUser.language },
           {
             gameUsers: {
               onlineDetectedAt: { $gte: new Date(Date.now() - 5000) },
@@ -212,16 +240,14 @@ export class GameRepository {
 
     let gameId = activeCurrentlyWaitingGame?.id;
 
-    Logger.log(JSON.stringify(activeCurrentlyWaitingGame), 'here');
-
     if (!!gameId) {
-      Logger.log('ゲームユーザを紐づける関数');
       const gu = await forkedEm.findOne(GameUser, {
         user: {
           id: userId,
         },
         game: {
           id: gameId,
+          language: waitingUser.language,
         },
       });
       if (!gu) {
@@ -244,18 +270,18 @@ export class GameRepository {
 
         if (gameUsersCount === humanCount) {
           await this.createGameQuestion(gameId, 5);
+          await this.createAiGameUsers({ gameId, aiCount: 2 });
           game.status = 1;
+          await forkedEm.persistAndFlush(game);
         }
       }
     } else {
-      Logger.log('ゲームを作成してゲームユーザを紐づける関数');
-
       const user = await forkedEm.findOne(User, {
         id: userId,
       });
 
       const game = forkedEm.create(Game, {
-        language,
+        language: waitingUser.language,
         humanCount,
         aiCount: humanCount,
       });
@@ -275,12 +301,19 @@ export class GameRepository {
   /**
    * ゲーム中にuserのonlineを確認する関数
    */
-  async healthCheck(gameUserId: string): Promise<{
+  async healthCheck({
+    gameUserId,
+    userId,
+  }: {
+    userId: string;
+    gameUserId: string;
+  }): Promise<{
     gameId: string;
     gameUsers: { id: string; name: string; online: boolean }[];
   }> {
-    Logger.log('healthCheck', 'healthCheck');
     const forkedEm = this.em.fork();
+
+    await this.ownerCheck({ gameUserId, userId });
 
     const userJoinedGame = await forkedEm.findOne(Game, {
       gameUsers: {
@@ -327,11 +360,14 @@ export class GameRepository {
 
     return {
       gameId: game.id,
-      gameUsers: game.gameUsers.getItems().map((gameUser) => ({
-        id: gameUser.user.id,
-        name: gameUser.user.name,
-        online: gameUser.onlineDetectedAt >= new Date(Date.now() - 5000),
-      })),
+      gameUsers: game.gameUsers
+        .getItems()
+        .filter((gameUser) => !!gameUser.user)
+        .map((gameUser) => ({
+          id: gameUser.user.id,
+          name: gameUser.user.name,
+          online: gameUser.onlineDetectedAt >= new Date(Date.now() - 5000),
+        })),
     };
   }
 
@@ -363,7 +399,6 @@ export class GameRepository {
       }[];
     }[];
   }> {
-    Logger.log('進行中のゲームの情報を取得して返却する関数', 'progress');
     const forkedEm = this.em.fork();
 
     const userJoinedGame = await forkedEm.findOne(Game, {
@@ -455,13 +490,16 @@ export class GameRepository {
     gameUserId,
     questionId,
     answer,
+    userId,
   }: {
     gameUserId: string;
     questionId: string;
     answer: string;
+    userId: string;
   }): Promise<void> {
-    Logger.log('questionに回答する関数', 'answerQuestion');
     const forkedEm = this.em.fork();
+
+    await this.ownerCheck({ gameUserId, userId });
 
     const userJoinedGame = await forkedEm.findOne(Game, {
       gameUsers: {
@@ -498,7 +536,7 @@ export class GameRepository {
         HttpStatus.BAD_REQUEST,
       );
 
-    if (gameQuestion.shouldAnswerAt < new Date())
+    if (new Date(gameQuestion.shouldAnswerAt) < new Date())
       throw new HttpException(
         'Question is not answerable',
         HttpStatus.BAD_REQUEST,
@@ -557,8 +595,7 @@ export class GameRepository {
   }) {
     const forkedEm = this.em.fork();
 
-    Logger.log('userId', userId);
-    Logger.log('gameUserId', gameUserId);
+    await this.ownerCheck({ gameUserId, userId });
 
     const game = await forkedEm.findOne(
       Game,
@@ -569,6 +606,7 @@ export class GameRepository {
       },
       {
         populate: [
+          'gameUsers',
           'gameQuestions',
           'gameQuestions.questions',
           'gameQuestions.gameAnswers',
@@ -581,24 +619,33 @@ export class GameRepository {
     if (!game)
       throw new HttpException('Game is not found', HttpStatus.BAD_REQUEST);
 
+    const gameUsers = game.gameUsers
+      .map((gameUser) => gameUser.id)
+      .sort((a) => (a === gameUserId ? -1 : 0));
+
     const builded = {
       gameId: game.id,
       shouldAnswerAt: game.shouldAnswerAt,
-      gameQuestions: game.gameQuestions.getItems().map((gameQuestion) => ({
-        id: gameQuestion.id,
-        question: {
-          id: gameQuestion.questions.id,
-          question: gameQuestion.questions.question,
-        },
-        answers: gameQuestion.gameAnswers.getItems().map((gameAnswer) => ({
-          id: gameAnswer.id,
-          answer: gameAnswer.answer,
-          gameUserId: gameAnswer.gameUser.id,
-          user: {
-            id: gameAnswer.gameUser.user.id,
+      gameQuestions: game.gameQuestions
+        .getItems()
+        .sort((a, b) => (a.phase > b.phase ? 1 : -1))
+        .map((gameQuestion) => ({
+          id: gameQuestion.id,
+          question: {
+            id: gameQuestion.questions.id,
+            question: gameQuestion.questions.question,
           },
+          answers: gameUsers.map((gameUserId) => {
+            return {
+              gameUserId: gameUserId,
+              answer: gameQuestion.gameAnswers
+                .getItems()
+                .find((gameAnswer) => gameAnswer.gameUser.id === gameUserId)
+                ?.answer?.toString(),
+              id: '',
+            };
+          }),
         })),
-      })),
     };
 
     return builded;
@@ -607,11 +654,15 @@ export class GameRepository {
   async isAnswered({
     gameUserId,
     questionId,
+    userId,
   }: {
     gameUserId: string;
     questionId: string;
+    userId: string;
   }) {
     const forkedEm = this.em.fork();
+
+    await this.ownerCheck({ gameUserId, userId });
 
     const gameAnswer = await forkedEm.findOne(GameAnswer, {
       gameUser: {
@@ -635,5 +686,341 @@ export class GameRepository {
     });
 
     return !!gameAnswer;
+  }
+
+  async vote({
+    voteBy,
+    voteTo,
+    userId,
+  }: {
+    voteBy: string;
+    voteTo: string;
+    userId: string;
+  }) {
+    const forkedEm = this.em.fork();
+
+    await this.ownerCheck({ gameUserId: voteBy, userId });
+
+    const game = await forkedEm.findOne(Game, {
+      gameUsers: {
+        id: voteBy,
+      },
+    });
+
+    if (new Date(game.shouldAnswerAt) < new Date())
+      throw new HttpException('Too late to vote', HttpStatus.BAD_REQUEST);
+
+    const alreadyVoted = await forkedEm.findOne(Vote, {
+      voteBy: {
+        id: voteBy,
+      },
+    });
+
+    if (alreadyVoted)
+      throw new HttpException('User is already voted', HttpStatus.BAD_REQUEST);
+
+    const vote = forkedEm.create(Vote, {
+      type: 0,
+      voteBy,
+      voteTo,
+      game: game.id,
+    });
+
+    vote.voteBy.isVoted = 1;
+
+    await forkedEm.persistAndFlush(vote);
+  }
+
+  async ownerCheck({
+    gameUserId,
+    userId,
+  }: {
+    gameUserId: string;
+    userId: string;
+  }) {
+    const forkedEm = this.em.fork();
+
+    const gameUser = await forkedEm.findOne(
+      GameUser,
+      {
+        id: gameUserId,
+      },
+      {
+        populate: ['user'],
+      },
+    );
+
+    if (gameUser.user.id !== userId)
+      throw new HttpException('User is not owner', HttpStatus.BAD_REQUEST);
+
+    return null;
+  }
+
+  async result({ userId, gameUserId }: { userId: string; gameUserId: string }) {
+    const forkedEm = this.em.fork();
+
+    await this.ownerCheck({ gameUserId, userId });
+
+    const game = await forkedEm.findOne(
+      Game,
+      {
+        gameUsers: {
+          id: gameUserId,
+        },
+      },
+      {
+        populate: ['gameUsers', 'gameUsers.user'],
+      },
+    );
+
+    if (!game)
+      throw new HttpException('Game is not found', HttpStatus.BAD_REQUEST);
+
+    if (new Date(game.shouldAnswerAt) > new Date())
+      throw new HttpException('Game is not finished', HttpStatus.BAD_REQUEST);
+
+    const myVote = await forkedEm.findOne(
+      Vote,
+      {
+        game: game.id,
+        voteBy: {
+          id: gameUserId,
+          isVoted: IS_VOTED.VOTED,
+        },
+      },
+      {
+        populate: ['voteTo'],
+      },
+    );
+
+    const opponentUser = game.gameUsers
+      .getItems()
+      .filter((gameUser) => gameUser.id !== gameUserId)
+      .find((gameUser) => gameUser.whichUser === WHICH_USER.HUMAN);
+
+    const opponentVote = await forkedEm.findOne(
+      Vote,
+      {
+        game: game.id,
+        voteBy: {
+          id: opponentUser.id,
+          isVoted: IS_VOTED.VOTED,
+        },
+      },
+      {
+        populate: ['voteTo'],
+      },
+    );
+
+    const meSuccess = myVote?.voteTo?.whichUser === WHICH_USER.HUMAN;
+    const meSuccessEmpty = !myVote?.voteTo;
+
+    const meSucceed = meSuccess && !meSuccessEmpty;
+
+    const opponentSuccess =
+      opponentVote?.voteTo?.whichUser === WHICH_USER.HUMAN;
+    const opponentSuccessEmpty = !opponentVote?.voteTo;
+
+    const opponentSucceed = opponentSuccess && !opponentSuccessEmpty;
+
+    const {
+      myAiNessRate,
+      myHumanDetectionRate,
+      opponentAiNessRate,
+      opponentHumanDetectionRate,
+    } = await this.getGameRate({
+      meUserId: userId,
+      opponentUserId: opponentUser.user.id,
+    });
+
+    const isWatchedResult = game?.status === 1;
+
+    if (!isWatchedResult) {
+      const currentMyHumanDetectionRate = myHumanDetectionRate[0].rate;
+
+      const currentOpponentHumanDetectionRate =
+        opponentHumanDetectionRate[0].rate;
+
+      const currentMyAiNessRate = myAiNessRate[0].rate;
+
+      const currentOpponentAiNessRate = opponentAiNessRate[0].rate;
+      if (meSucceed) {
+        const newMyHumanDetectionRate = forkedEm.create(GameRate, {
+          rate: currentMyHumanDetectionRate + 10,
+          type: GAME_RATE_TYPE.HUMAN_DETECTION,
+          user: userId,
+        });
+        const newOpponentAiNess = forkedEm.create(GameRate, {
+          rate: currentOpponentAiNessRate - 5,
+          type: GAME_RATE_TYPE.AI_NESS,
+          user: opponentUser.user.id,
+        });
+        await forkedEm.persistAndFlush([
+          newMyHumanDetectionRate,
+          newOpponentAiNess,
+        ]);
+      } else {
+        const newMyHumanDetectionRate = forkedEm.create(GameRate, {
+          rate: currentMyHumanDetectionRate - 5,
+          type: GAME_RATE_TYPE.HUMAN_DETECTION,
+          user: userId,
+        });
+        const newOpponentAiNess = forkedEm.create(GameRate, {
+          rate: currentOpponentAiNessRate + 5,
+          type: GAME_RATE_TYPE.AI_NESS,
+          user: opponentUser.user.id,
+        });
+        await forkedEm.persistAndFlush([
+          newMyHumanDetectionRate,
+          newOpponentAiNess,
+        ]);
+      }
+
+      if (opponentSucceed) {
+        const newOpponentHumanDetectionRate = forkedEm.create(GameRate, {
+          rate: currentOpponentHumanDetectionRate + 10,
+          type: GAME_RATE_TYPE.HUMAN_DETECTION,
+          user: opponentUser.user.id,
+        });
+        const newMyAiNessRate = forkedEm.create(GameRate, {
+          rate: currentMyAiNessRate - 5,
+          type: GAME_RATE_TYPE.AI_NESS,
+          user: userId,
+        });
+        await forkedEm.persistAndFlush([
+          newOpponentHumanDetectionRate,
+          newMyAiNessRate,
+        ]);
+      } else {
+        const newOpponentHumanDetectionRate = forkedEm.create(GameRate, {
+          rate: currentOpponentHumanDetectionRate - 5,
+          type: GAME_RATE_TYPE.HUMAN_DETECTION,
+          user: opponentUser.user.id,
+        });
+        const newMyAiNessRate = forkedEm.create(GameRate, {
+          rate: currentMyAiNessRate + 5,
+          type: GAME_RATE_TYPE.AI_NESS,
+          user: userId,
+        });
+        await forkedEm.persistAndFlush([
+          newOpponentHumanDetectionRate,
+          newMyAiNessRate,
+        ]);
+      }
+
+      game.status = 1;
+      await forkedEm.persistAndFlush([game]);
+    }
+
+    const {
+      myAiNessRate: newMyAiNessRate,
+      myHumanDetectionRate: newMyHumanDetectionRate,
+      opponentAiNessRate: newOpponentAiNessRate,
+      opponentHumanDetectionRate: newOpponentHumanDetectionRate,
+    } = await this.getGameRate({
+      meUserId: userId,
+      opponentUserId: opponentUser.user.id,
+    });
+
+    return {
+      gameId: game.id,
+      result: {
+        me: {
+          success: meSucceed,
+          humanDetect: {
+            prevRate: newMyHumanDetectionRate[1]?.rate,
+            currentRate: newMyHumanDetectionRate[0]?.rate,
+          },
+          aiNess: {
+            prevRate: newMyAiNessRate[1]?.rate,
+            currentRate: newMyAiNessRate[0]?.rate,
+          },
+        },
+        opponent: {
+          success: opponentSucceed,
+          humanDetect: {
+            prevRate: newOpponentHumanDetectionRate[1]?.rate,
+            currentRate: newOpponentHumanDetectionRate[0]?.rate,
+          },
+          aiNess: {
+            prevRate: newOpponentAiNessRate[1]?.rate,
+            currentRate: newOpponentAiNessRate[0]?.rate,
+          },
+        },
+      },
+    };
+  }
+
+  async getGameRate({
+    meUserId,
+    opponentUserId,
+  }: {
+    meUserId: string;
+    opponentUserId: string;
+  }) {
+    const forkedEm = this.em.fork();
+
+    const myHumanDetectionRate = await forkedEm.find(
+      GameRate,
+      {
+        user: {
+          id: meUserId,
+        },
+        type: GAME_RATE_TYPE.HUMAN_DETECTION,
+      },
+      {
+        orderBy: { createdAt: 'DESC' },
+        limit: 2,
+      },
+    );
+
+    const myAiNessRate = await forkedEm.find(
+      GameRate,
+      {
+        user: {
+          id: meUserId,
+        },
+        type: GAME_RATE_TYPE.AI_NESS,
+      },
+      {
+        orderBy: { createdAt: 'DESC' },
+        limit: 2,
+      },
+    );
+
+    const opponentHumanDetectionRate = await forkedEm.find(
+      GameRate,
+      {
+        user: {
+          id: opponentUserId,
+        },
+        type: GAME_RATE_TYPE.HUMAN_DETECTION,
+      },
+      {
+        orderBy: { createdAt: 'DESC' },
+        limit: 2,
+      },
+    );
+
+    const opponentAiNessRate = await forkedEm.find(
+      GameRate,
+      {
+        user: {
+          id: opponentUserId,
+        },
+        type: GAME_RATE_TYPE.AI_NESS,
+      },
+      {
+        orderBy: { createdAt: 'DESC' },
+        limit: 2,
+      },
+    );
+
+    return {
+      myHumanDetectionRate,
+      myAiNessRate,
+      opponentHumanDetectionRate,
+      opponentAiNessRate,
+    };
   }
 }

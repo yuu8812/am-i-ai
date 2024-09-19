@@ -1,4 +1,5 @@
 import { Collection, Entity, OneToMany, Property } from '@mikro-orm/core';
+import { GameRate } from 'src/amIAi/entities/GameRate';
 import { GameUser } from 'src/amIAi/entities/GameUser';
 import { WaitingUser } from 'src/amIAi/entities/WaitingUser';
 import { BaseEntity } from 'src/amIAi/entityHelper/base';
@@ -34,4 +35,7 @@ export class User extends BaseEntity {
 
   @OneToMany(() => WaitingUser, (waitingUser) => waitingUser.user)
   waitingUsers = new Collection<WaitingUser>(this);
+
+  @OneToMany(() => GameRate, (gameRate) => gameRate.user)
+  gameRates = new Collection<GameRate>(this);
 }

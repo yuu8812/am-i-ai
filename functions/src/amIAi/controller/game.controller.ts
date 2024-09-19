@@ -10,6 +10,7 @@ import { ProgressUseCase } from 'src/amIAi/usecase/game/progress.usecase';
 import { GetAnswersUseCase } from 'src/amIAi/usecase/game/getAnswers.usecase';
 import { IsAnsweredUseCase } from 'src/amIAi/usecase/game/isAnswered.usecase';
 import { IsVotedUseCase } from 'src/amIAi/usecase/game/isVoted.usecase';
+import { ResultUseCase } from 'src/amIAi/usecase/game/result.usecase';
 
 @Controller()
 export class GameController {
@@ -23,6 +24,7 @@ export class GameController {
     private readonly getAnswersUseCase: GetAnswersUseCase,
     private readonly isAnsweredUseCase: IsAnsweredUseCase,
     private readonly isVotedUseCase: IsVotedUseCase,
+    private readonly resultUseCase: ResultUseCase,
   ) {}
 
   @TsRestHandler(CONTRACT.GAMES)
@@ -54,6 +56,9 @@ export class GameController {
       },
       isVoted: async (param) => {
         return await this.isVotedUseCase.execute(param);
+      },
+      result: async (param) => {
+        return await this.resultUseCase.execute(param);
       },
     });
   }

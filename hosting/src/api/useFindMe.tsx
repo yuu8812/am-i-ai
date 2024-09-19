@@ -4,15 +4,16 @@ import { client } from "src/client";
 import useSWR from "swr";
 
 const useFindMe = () => {
-  const { data } = useSWR(CONTRACT.USERS.getUser.path, () =>
-    client.USERS.getUser()
+  const { data, error, isLoading, mutate } = useSWR(
+    CONTRACT.USERS.getUser.path,
+    () => client.USERS.getUser()
   );
 
   const typedData = data?.body as
     | ClientInferResponseBody<typeof CONTRACT.USERS.getUser, 200>
     | undefined;
 
-  return { data: typedData };
+  return { data: typedData, error, isLoading, mutate };
 };
 
 export default useFindMe;

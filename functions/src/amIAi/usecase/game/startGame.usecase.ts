@@ -1,3 +1,4 @@
+import { QuestionRepository } from './../../repository/question.repository';
 import { Injectable } from '@nestjs/common';
 import {
   GameContractRequestShapes,
@@ -8,14 +9,18 @@ import { extractIdFromHeader } from 'src/amIAi/utils/getIdFromHeader';
 
 @Injectable()
 export class StartGameUseCase {
-  constructor(private readonly gameRepository: GameRepository) {}
+  constructor(
+    private readonly gameRepository: GameRepository,
+    private readonly questionRepository: QuestionRepository,
+  ) {}
   async execute(
     param: GameContractRequestShapes['startGame'],
   ): Promise<GameContractResponseShapes['startGame']> {
-    const { userId, language } = extractIdFromHeader(param);
+    const { userId } = extractIdFromHeader(param);
+    await this.questionRepository.createQuestion(['魚', 'fish'], 0);
     const startGameResponse = await this.gameRepository.startGame(
       userId,
-      language,
+      param.body.language,
     );
     return {
       status: 201,

@@ -1,7 +1,6 @@
 import {
   Collection,
   Entity,
-  EntityRepositoryType,
   ManyToOne,
   OneToMany,
   Property,
@@ -9,11 +8,9 @@ import {
 import { GameQuestion } from 'src/amIAi/entities/GameQuestion';
 import { User } from 'src/amIAi/entities/User';
 import { BaseEntity } from 'src/amIAi/entityHelper/base';
-import { QuestionRepository } from 'src/amIAi/repository/question.repository';
 
 @Entity({
   tableName: 'question',
-  repository: () => QuestionRepository,
 })
 export class Question extends BaseEntity {
   @Property({ default: 0 })
@@ -35,6 +32,4 @@ export class Question extends BaseEntity {
 
   @OneToMany(() => GameQuestion, (gameQuestion) => gameQuestion.questions)
   gameQuestions = new Collection<GameQuestion>(this);
-
-  [EntityRepositoryType]?: QuestionRepository;
 }

@@ -12,10 +12,15 @@ export class VoteUseCase {
   async execute(
     param: GameContractRequestShapes['vote'],
   ): Promise<GameContractResponseShapes['vote']> {
-    const { userId, language } = extractIdFromHeader(param);
+    const { userId } = extractIdFromHeader(param);
+    const response = await this.gameRepository.vote({
+      userId,
+      voteBy: param.params.gameUserId,
+      voteTo: param.body.voteTo,
+    });
     return {
       status: 200,
-      body: null,
+      body: response,
     };
   }
 }

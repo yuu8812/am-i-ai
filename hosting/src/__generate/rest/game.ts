@@ -23,7 +23,9 @@ export const GAME_CONTRACT = c.router({
         };
       }>(),
     },
-    body: null,
+    body: z.object({
+      language: z.union([z.literal('ja'), z.literal('en')]),
+    }),
   },
 
   /**
@@ -106,11 +108,13 @@ export const GAME_CONTRACT = c.router({
    * */
   vote: {
     method: 'POST',
-    path: '/game/vote/:answerId',
+    path: '/game/vote/:gameUserId',
     pathParams: z.object({
-      answerId: SHORT_UUID_SCHEMA,
+      gameUserId: SHORT_UUID_SCHEMA,
     }),
-    body: null,
+    body: z.object({
+      voteTo: SHORT_UUID_SCHEMA,
+    }),
     responses: {
       201: null,
     },
@@ -139,9 +143,6 @@ export const GAME_CONTRACT = c.router({
             id: string;
             answer: string;
             gameUserId: string;
-            user: {
-              id: string;
-            };
           }[];
         }[];
       }>(),
@@ -179,6 +180,34 @@ export const GAME_CONTRACT = c.router({
     responses: {
       200: c.type<{
         isVoted: boolean;
+      }>(),
+    },
+  },
+
+  /**
+   *  gameの結果を取得するエンドポイント
+   * */
+  result: {
+    method: 'GET',
+    path: '/game/result/:gameUserId',
+    pathParams: z.object({
+      gameUserId: SHORT_UUID_SCHEMA,
+    }),
+    responses: {
+      200: c.type<{
+        gameId: string;
+        result: {
+          me: {
+            success: boolean;
+            humanDetect: { prevRate: number; currentRate: number };
+            aiNess: { prevRate: number; currentRate: number };
+          };
+          opponent: {
+            success: boolean;
+            humanDetect: { prevRate: number; currentRate: number };
+            aiNess: { prevRate: number; currentRate: number };
+          };
+        };
       }>(),
     },
   },

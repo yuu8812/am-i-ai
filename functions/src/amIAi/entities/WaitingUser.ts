@@ -1,4 +1,5 @@
 import { Entity, ManyToOne, Property } from '@mikro-orm/core';
+import { LanguageType } from 'src/amIAi/constants/game';
 import { User } from 'src/amIAi/entities/User';
 import { BaseEntity } from 'src/amIAi/entityHelper/base';
 
@@ -15,7 +16,7 @@ export class WaitingUser extends BaseEntity {
   type: 0;
 
   @Property({ default: 0 })
-  language: 0 | 1;
+  language: LanguageType;
 
   @Property({ onCreate: () => new Date(), nullable: true })
   onlineDetectedAt: Date;

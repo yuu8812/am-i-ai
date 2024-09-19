@@ -20,6 +20,10 @@ const Vote = lazy(async () => {
   return import("src/pages/game/Vote");
 });
 
+const Result = lazy(async () => {
+  return import("src/pages/game/Result");
+});
+
 const LazySolo = () => {
   return (
     <Suspense fallback={<div />}>
@@ -60,4 +64,12 @@ const LazyVote = () => {
   );
 };
 
-export { LazySolo, LazyMulti, LazyMultiPlay, LazyWait, LazyVote };
+const LazyResult = () => {
+  return (
+    <Suspense fallback={<div />}>
+      <Result />
+    </Suspense>
+  );
+};
+
+export { LazySolo, LazyMulti, LazyMultiPlay, LazyWait, LazyVote, LazyResult };

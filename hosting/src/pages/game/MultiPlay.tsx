@@ -17,6 +17,7 @@ import useAnswerQuestion from "src/api/useAnswerQuestion";
 import { FaCheck } from "react-icons/fa";
 import DefaultToast from "src/toast/DefaultToast";
 import toast from "react-hot-toast";
+import Robot from "src/component/Robot";
 
 const variants = {
   show: {
@@ -141,9 +142,9 @@ const MultiPlay = () => {
   }, [progress, findCurrentQuestion]);
 
   const handleBeforeEnd = useCallback(() => {
-    if (!value) return;
+    if (!value || isAnswered) return;
     handleAnswer();
-  }, [handleAnswer, value]);
+  }, [handleAnswer, value, isAnswered]);
 
   useEffect(() => {
     setUp();
@@ -156,6 +157,9 @@ const MultiPlay = () => {
   return (
     <div className="flex flex-1 flex-col">
       <TitleArea title="MultiPlay" />
+      <div className="fixed bottom-6 right-16 z-50 scale-50">
+        <Robot />
+      </div>
       {progress && health && (
         <Transition>
           <div className="text-white my-4 pl-1">Joined Players</div>
@@ -167,7 +171,7 @@ const MultiPlay = () => {
                     <div className="flex items-center justify-between flex-1">
                       <div className="m-1 flex items-center gap-2">
                         {user.name}
-                        {i === 0 && <div className="">(you)</div>}
+                        {i === 0 && <div className="">( you )</div>}
                       </div>
                       <OnlineBadge isOnline={user.online} />
                     </div>
@@ -177,7 +181,7 @@ const MultiPlay = () => {
             })}
           </div>
           {progress.questions.length > 0 && currentQuestion && (
-            <div className="flex flex-1 flex-col">
+            <form className="flex flex-1 flex-col">
               <div className="text-white mb-4 mt-6">
                 Question {currentQuestion.phase + 1} /{" "}
                 {progress.questions.length}
@@ -237,9 +241,10 @@ const MultiPlay = () => {
                   width="w-60"
                   disabled={!canAnswer}
                   onCLick={handleAnswer}
+                  type="submit"
                 />
               </div>
-            </div>
+            </form>
           )}
         </Transition>
       )}

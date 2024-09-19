@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 import DefaultToast from "src/toast/DefaultToast";
 import MatchCard from "src/component/MatchCard";
 import useMatching from "src/api/useMatching";
+import Robot from "src/component/Robot";
 
 const Wait = () => {
   const { waitingUserId } = useParams();
@@ -60,6 +61,9 @@ const Wait = () => {
 
   return (
     <div className="flex flex-1 flex-col">
+      <div className="fixed bottom-6 right-16 z-50 scale-50">
+        <Robot />
+      </div>
       <TitleArea title="Now you are waiting for a match" />
       <Transition>
         <div className="text-slate-400">please wait for a while...</div>
@@ -70,7 +74,12 @@ const Wait = () => {
           <div className="flex flex-1">
             <div className="flex flex-1 items-center justify-around p-4 gap-10">
               <div className="max-w-[500px] w-40 h-[400px] m-4 flex flex-1">
-                <MatchCard iconUrl={me.iconUrl} name={me.name} rate="100" />
+                <MatchCard
+                  iconUrl={me.iconUrl}
+                  name={me.name}
+                  humanDetectionRate={me.rates.humanDetection[0].rate}
+                  aiNessRate={me.rates.aiNess[0].rate}
+                />
               </div>
               <div className="w-20 h-40 flex items-center justify-center">
                 <img
@@ -85,7 +94,8 @@ const Wait = () => {
                 <MatchCard
                   iconUrl={opponent?.iconUrl}
                   name={opponent?.userName}
-                  rate="100"
+                  humanDetectionRate={100}
+                  aiNessRate={100}
                   meOrYou="you"
                   searching={gameDataLength !== 2}
                 />

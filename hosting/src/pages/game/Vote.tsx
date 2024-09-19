@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useParams } from "react-router-dom";
+import React, { useCallback, useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import Transition from "src/animate/Transition";
 import useGetAnswers from "src/api/useGetAnswers";
 import Card from "src/component/Card";
@@ -9,29 +9,10 @@ import { AnimatePresence, motion, Variants } from "framer-motion";
 import Pop from "src/component/Pop";
 import Button from "src/component/Button";
 import useIsVoted from "src/api/useIsVoted";
-
-const DUMMY_ANSWERS = [
-  {
-    id: "a",
-    answer: "dummyHere",
-    gameUserId: "dummy1",
-  },
-  {
-    id: "b",
-    answer: "dummyHere",
-    gameUserId: "dummy2",
-  },
-  {
-    id: "b",
-    answer: "dummyHere",
-    gameUserId: "dummy3",
-  },
-  {
-    id: "b",
-    answer: "dummyHere",
-    gameUserId: "dummy4",
-  },
-];
+import useVote from "src/api/useVote";
+import DefaultToast from "src/toast/DefaultToast";
+import toast from "react-hot-toast";
+import { FaCheck } from "react-icons/fa";
 
 const variants: Variants = {
   hide: {
@@ -51,7 +32,9 @@ const variants: Variants = {
 const Vote = () => {
   const { gameUserId } = useParams();
   const { data: answers } = useGetAnswers(gameUserId as string);
-  const { data: info } = useIsVoted(gameUserId as string);
+  const { data: info, mutate } = useIsVoted(gameUserId as string);
+  const { vote } = useVote();
+  const navigate = useNavigate();
 
   const [gameUser, setGameUser] = useState<string>();
 
@@ -59,13 +42,56 @@ const Vote = () => {
 
   const canSubmit = !!answers && !isVoted && !!gameUser;
 
+  const dateOver = !!(
+    answers?.shouldAnswerAt && new Date(answers.shouldAnswerAt) < new Date()
+  );
+
   const handleSelectGameUser = (gameUserId: string) => {
     setGameUser(gameUserId);
   };
 
-  const handleBeforeEnd = () => {
-    console.log("before end");
+  const reset = useCallback(() => {
+    setGameUser(undefined);
+  }, []);
+
+  const handleSubmit = useCallback(async () => {
+    if (!canSubmit) return;
+    await vote({
+      gameUserId: gameUserId as string,
+      voteTo: gameUser as string,
+    });
+    reset();
+    toast.success(
+      <DefaultToast
+        twClassName="w-60"
+        message="Your vote has been submitted!!"
+      />,
+      {
+        id: "vote_succeed_modal",
+      }
+    );
+    await mutate();
+  }, [canSubmit, vote, gameUser, gameUserId, reset, mutate]);
+
+  const handleBeforeEnd = async () => {
+    await handleSubmit();
   };
+
+  const navigateResult = useCallback(() => {
+    navigate(`/game/multi/${gameUserId}/result`);
+  }, [navigate, gameUserId]);
+
+  const handleOnEnd = async () => {
+    navigateResult();
+  };
+
+  const setUp = useCallback(() => {
+    !!dateOver && navigateResult();
+  }, [navigateResult, dateOver]);
+
+  useEffect(() => {
+    setUp();
+  }, [setUp]);
 
   return (
     <div className="flex flex-1 flex-col">
@@ -77,10 +103,14 @@ const Vote = () => {
             <>
               <div className="flex items-center gap-4">
                 <div className="">Please answer in</div>
-                <CountDown date={new Date(answers.shouldAnswerAt)} />
+                <CountDown
+                  date={new Date(answers.shouldAnswerAt)}
+                  onBeforeEnd={handleBeforeEnd}
+                  onEnd={handleOnEnd}
+                />
                 <div className="">seconds</div>
               </div>
-              <div className="my-6 bg-gray-800 px-4 py-2 w-fit text-blue-400 rounded">
+              <div className="my-6 bg-gray-800 px-4 py-2 w-fit text-blue-400 rounded shadow-lg">
                 Questions overview
               </div>
               <div className="mt-4 flex flex-col gap-4">
@@ -99,14 +129,12 @@ const Vote = () => {
                       </Card>
                       <div className="h-4"></div>
                       <div className="flex flex-col gap-2">
-                        {gameQuestion.answers.sort().map((answer, i) => {
+                        {gameQuestion.answers.map((answer, i) => {
                           return (
                             <div className="flex" key={`${answer}_${i}`}>
                               <div className="flex items-center gap-2">
                                 <div className="bg-white w-24 rounded text-black p-2 text-sm text-center">
-                                  {answer.gameUserId === gameUserId
-                                    ? "You"
-                                    : `Player ${i + 1}`}
+                                  {i === 0 ? "You" : `Player ${i}`}
                                 </div>
                                 <div className="p-2 hover:underline">
                                   {answer.answer ?? "未回答です"}
@@ -129,20 +157,23 @@ const Vote = () => {
           variants={variants}
           initial="hide"
           animate="show"
-          className="fixed bottom-6 h-32 w-[70%] bg-slate-300 border rounded shadow-lg left-[15%] z-20 flex"
+          className="fixed bottom-6 h-32 w-[70%] border rounded shadow-lg left-[15%] z-20 flex"
         >
           {isVoted ? (
-            <>
-              <div className="flex items-center gap-2 text-sm pl-4">
+            <Card>
+              <div className="flex items-center gap-2 pl-4 text-white text-md font-semibold">
+                <div className="w-6">
+                  <FaCheck size={20} color="#15da12" />
+                </div>
                 <div className="">Please wait</div>
                 {answers && (
                   <CountDown date={new Date(answers.shouldAnswerAt)} />
                 )}
                 <div className="">seconds to see result</div>
               </div>
-            </>
+            </Card>
           ) : (
-            <>
+            <Card>
               <div className="absolute -top-16 self-center w-full flex items-center justify-center">
                 <div className="w-80">
                   <AnimatePresence>
@@ -153,45 +184,50 @@ const Vote = () => {
                 </div>
               </div>
               <div className="flex justify-center h-full flex-col m-2 relative z-50">
-                <div className="flex text-black">
-                  <div className="flex self-start p-2 underline font-bold">
+                <div className="flex">
+                  <div className="flex self-start p-2 underline font-bold text-white">
                     Who is the human?
                   </div>
                   <div className="flex items-center gap-2 text-sm pl-4 text-blue-600">
                     <div className="">You have more</div>
                     {answers && (
-                      <CountDown
-                        date={new Date(answers.shouldAnswerAt)}
-                        onBeforeEnd={handleBeforeEnd}
-                      />
+                      <CountDown date={new Date(answers.shouldAnswerAt)} />
                     )}
                     <div className="">seconds to answer</div>
                   </div>
                 </div>
                 <div className="flex flex-1 m-2 gap-6 pt-2">
-                  {DUMMY_ANSWERS.map((answer, i) => {
-                    return (
-                      <button
-                        onClick={() => handleSelectGameUser(answer.gameUserId)}
-                        key={`${answer}_${i}_user`}
-                        className={`w-28 h-10 shadow-lg rounded p-2 text-sm hover:scale-105 transition-all border border-slate-500 ${
-                          gameUser === answer.gameUserId
-                            ? "bg-blue-500 text-white"
-                            : "bg-white  text-black"
-                        }`}
-                      >
-                        Player {i + 1}
-                      </button>
-                    );
-                  })}
+                  {answers?.gameQuestions[0].answers
+                    .slice(1, 4)
+                    .map((answer, i) => {
+                      return (
+                        <button
+                          onClick={() =>
+                            handleSelectGameUser(answer.gameUserId)
+                          }
+                          key={`${answer}_${i}_user`}
+                          className={`w-28 h-10 shadow-lg rounded p-2 text-sm hover:scale-105 transition-all border border-slate-500 ${
+                            gameUser === answer.gameUserId
+                              ? "bg-blue-500 text-white"
+                              : "bg-white  text-black"
+                          }`}
+                        >
+                          Player {i + 1}
+                        </button>
+                      );
+                    })}
                 </div>
               </div>
               <div className="flex flex-1 items-center justify-end pr-10">
                 <div className="w-60">
-                  <Button message="Submit!!" disabled={!canSubmit} />
+                  <Button
+                    message="Submit!!"
+                    disabled={!canSubmit}
+                    onCLick={handleSubmit}
+                  />
                 </div>
               </div>
-            </>
+            </Card>
           )}
         </motion.div>
       </Transition>

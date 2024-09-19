@@ -33,7 +33,7 @@ const Pop = ({ type, text }: { type: "top" | "bottom"; text: string }) => {
       initial="hide"
       animate="show"
       exit="exit"
-      className="relative px-6 text-center text-xs self-center bg-blue-500 text-white rounded-lg p-3 max-w-xs shadow-lg"
+      className="relative px-6 w-fit text-center text-xs self-center bg-blue-500 text-white rounded-lg p-3 max-w-xs shadow-lg"
     >
       <div
         className={`${type === "bottom" && "-bottom-8 relative rotate-180"}`}

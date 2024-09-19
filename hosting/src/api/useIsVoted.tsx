@@ -9,7 +9,7 @@ export type IsVotedResponse = ClientInferResponseBody<
 >;
 
 const useIsVoted = (gameUserId: string) => {
-  const { data, error, isLoading } = useSWR(
+  const { data, error, isLoading, mutate } = useSWR(
     `${CONTRACT.GAMES.isVoted.path}/${gameUserId}`,
     () =>
       client.GAMES.isVoted({
@@ -21,7 +21,7 @@ const useIsVoted = (gameUserId: string) => {
 
   const typedData = data?.body as IsVotedResponse | undefined;
 
-  return { data: typedData, error, isLoading };
+  return { data: typedData, error, isLoading, mutate };
 };
 
 export default useIsVoted;

@@ -20,6 +20,12 @@ export class FindMeUsecase {
         id: user.id,
         name: user.name,
         iconUrl: user.iconUrl,
+        rates: {
+          humanDetection: user.rates.humanDetection,
+          aiNess: user.rates.aiNess,
+          aiNessRank: user.rates.aiNessRank,
+          humanDetectionRank: user.rates.humanDetectionRank,
+        },
       },
     };
   }

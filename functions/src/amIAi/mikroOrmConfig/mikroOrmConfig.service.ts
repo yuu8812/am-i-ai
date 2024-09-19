@@ -2,6 +2,7 @@ import { MikroOrmModuleOptions } from '@mikro-orm/nestjs';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { Injectable, Logger } from '@nestjs/common';
 import { AppConfigService } from 'src/amIAi/config/config.service';
+import { resolve } from 'path';
 
 @Injectable()
 export class MikroOrmConfigService {
@@ -21,10 +22,10 @@ export class MikroOrmConfigService {
 
   getMikroOrmConfig(): MikroOrmModuleOptions {
     return {
-      entities: ['./dist/amIAi/entities'],
-      entitiesTs: ['./src/amIAi/entities'],
-      driver: PostgreSqlDriver,
+      entities: [resolve(__dirname, '../entities')],
+      entitiesTs: [resolve(__dirname, '../entities')],
       clientUrl: this.defineClientUrl(),
+      driver: PostgreSqlDriver,
       autoLoadEntities: true,
       autoJoinOneToOneOwner: true,
     };

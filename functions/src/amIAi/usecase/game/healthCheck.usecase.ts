@@ -4,6 +4,7 @@ import {
   GameContractResponseShapes,
 } from 'src/amIAi/contract/type';
 import { GameRepository } from 'src/amIAi/repository/game.repository';
+import { extractIdFromHeader } from 'src/amIAi/utils/getIdFromHeader';
 
 @Injectable()
 export class HealthCheckUseCase {
@@ -11,9 +12,12 @@ export class HealthCheckUseCase {
   async execute(
     param: GameContractRequestShapes['healthCheck'],
   ): Promise<GameContractResponseShapes['healthCheck']> {
-    const response = await this.gameRepository.healthCheck(
-      param.params.gameUserId,
-    );
+    const { userId } = extractIdFromHeader(param);
+
+    const response = await this.gameRepository.healthCheck({
+      gameUserId: param.params.gameUserId,
+      userId,
+    });
     return {
       status: 200,
       body: response,

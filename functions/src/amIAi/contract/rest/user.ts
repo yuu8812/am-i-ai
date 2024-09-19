@@ -13,7 +13,23 @@ export const USER_CONTRACT = c.router({
     method: 'GET',
     path: '/user',
     responses: {
-      200: c.type<{ id: string; name: string; iconUrl: string }>(),
+      200: c.type<{
+        id: string;
+        name: string;
+        iconUrl: string;
+        rates: {
+          humanDetection: {
+            rate: number;
+            createdAt: Date;
+          }[];
+          humanDetectionRank: number;
+          aiNess: {
+            rate: number;
+            createdAt: Date;
+          }[];
+          aiNessRank: number;
+        };
+      }>(),
     },
   },
 

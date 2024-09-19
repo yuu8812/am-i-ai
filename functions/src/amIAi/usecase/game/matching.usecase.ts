@@ -16,10 +16,9 @@ export class MatchingUseCase {
   async execute(
     param: GameContractRequestShapes['matching'],
   ): Promise<GameContractResponseShapes['matching']> {
-    const { userId, language } = extractIdFromHeader(param);
+    const { userId } = extractIdFromHeader(param);
     const response = await this.gameRepository.matching({
       userId,
-      language,
       humanCount: 2,
       waitingUserId: param.params.waitingUserId,
     });

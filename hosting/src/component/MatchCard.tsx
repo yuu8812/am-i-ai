@@ -3,19 +3,30 @@ import React from "react";
 import { FcSearch } from "react-icons/fc";
 import Card from "src/component/Card";
 import { motion } from "framer-motion";
+import { LazyRateChart } from "src/component";
 
 const MatchCard = ({
   iconUrl,
   name,
-  rate,
+  humanDetectionRate,
+  aiNessRate,
   meOrYou = "me",
   searching = false,
+  chart = false,
+  chartData,
+  humanDetectionRank,
+  aiNessRank,
 }: {
   name?: string;
   iconUrl?: string;
-  rate: string;
+  humanDetectionRate: number;
+  aiNessRate: number;
   meOrYou?: "me" | "you";
   searching?: boolean;
+  chart?: boolean;
+  chartData?: { aiNess: number[]; humanDetect: number[]; dates: Date[] };
+  humanDetectionRank?: number;
+  aiNessRank?: number;
 }) => {
   return (
     <Card>
@@ -36,26 +47,58 @@ const MatchCard = ({
               initial={{ opacity: 0, x: -200 }}
               exit={{ opacity: 0, x: 200 }}
               transition={{ duration: 0.3 }}
-              className="w-40 h-[400px] p-4"
+              className="w-40 h-full p-4 flex flex-1"
             >
-              <div className="text-2xl font-semibold text-white">
-                {meOrYou === "me" ? "You" : "Opponent"}
+              <div>
+                <div className="text-2xl font-semibold text-white">
+                  {meOrYou === "me" ? "You" : "Opponent"}
+                </div>
+                <div className="text-xl font-semibold text-gray-400 pt-2">
+                  name: {name}
+                </div>
+                <div className="my-4">
+                  <img
+                    className="shadow-lg rounded"
+                    src={iconUrl}
+                    width={100}
+                    height={100}
+                    alt="icon_me"
+                  />
+                </div>
+                <div className="text-xl font-semibold text-gray-400 pt-2 flex gap-4">
+                  <div className="">humanDetectionRate:</div>
+                  <div className="text-red-500">{humanDetectionRate}</div>
+                </div>
+                {humanDetectionRank && (
+                  <div className="text-xl text-gray-400 pt-2 flex gap-4 font-semibold items-center">
+                    <div className="">Rank:</div>
+                    <div className="text-red-500">{humanDetectionRank}</div>
+                  </div>
+                )}
+                <div className="text-xl font-semibold text-gray-400 pt-2 flex gap-4">
+                  <div className="">aiNessRate:</div>
+                  <div className="text-blue-500">{aiNessRate}</div>
+                </div>
+                {aiNessRank && (
+                  <div className="text-xl font-semibold text-gray-400 pt-2 flex gap-4 items-center">
+                    <div className="">Rank:</div>
+                    <div className="text-blue-500">{aiNessRank}</div>
+                  </div>
+                )}
               </div>
-              <div className="text-xl font-semibold text-gray-400 pt-2">
-                name: {name}
-              </div>
-              <div className="my-4">
-                <img
-                  className="shadow-lg rounded"
-                  src={iconUrl}
-                  width={100}
-                  height={100}
-                  alt="icon_me"
-                />
-              </div>
-              <div className="text-xl font-semibold text-gray-400 pt-2">
-                rate: {rate}
-              </div>
+              {chart && chartData && (
+                <div className="flex flex-1">
+                  <div className="p-2 w-full h-full">
+                    <LazyRateChart
+                      data={{
+                        aiNess: chartData.aiNess,
+                        humanDetect: chartData.humanDetect,
+                        dates: chartData.dates,
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
