@@ -10,13 +10,13 @@ const Layout = () => {
 
   return (
     <div className="flex flex-1 flex-col bg-gradient-to-br from-blue-900 to-zinc-900">
-      <div className="flex flex-1 md:flex-row flex-col">
+      <div className="flex flex-1 lg:flex-row flex-col">
         <NavBar />
         <NavBarForMobile />
         <div className="flex flex-col flex-1 flex-shrink-0">
           <div className="flex flex-1 flex-col min-h-screen">
             {!!state ? (
-              <div className="md:p-4 p-2 flex flex-1">
+              <div className="lg:p-4 p-2 flex flex-1">
                 <Outlet />
               </div>
             ) : (

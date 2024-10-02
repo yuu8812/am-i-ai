@@ -78,7 +78,7 @@ const Vote = () => {
   };
 
   const navigateResult = useCallback(() => {
-    // navigate(`/game/multi/${gameUserId}/result`);
+    navigate(`/game/multi/${gameUserId}/result`);
   }, [navigate, gameUserId]);
 
   const handleOnEnd = async () => {
@@ -119,8 +119,8 @@ const Vote = () => {
                     <div className="" key={`${gameQuestion}_${i}`}>
                       <Card>
                         <div className="p-2">
-                          <div className="flex gap gap-2 md:flex-row flex-col">
-                            <div className="">Q.{i + 1}</div>
+                          <div className="flex gap gap-2 lg:flex-row flex-col">
+                            <div>Q.{i + 1}</div>
                             <div className="">
                               {gameQuestion.question.question}
                             </div>
@@ -132,8 +132,14 @@ const Vote = () => {
                         {gameQuestion.answers.map((answer, i) => {
                           return (
                             <div className="flex" key={`${answer}_${i}`}>
-                              <div className="flex items-center gap-2 md:flex-row flex-col">
-                                <div className="bg-white min-w-24 rounded text-black p-2 text-sm self-start text-center">
+                              <div className="flex items-center gap-2 lg:flex-row flex-col">
+                                <div
+                                  className={`bg-white min-w-24 rounded ${
+                                    i === 0
+                                      ? "text-blue-900 font-bold"
+                                      : "text-black"
+                                  } p-2 text-sm self-start text-center`}
+                                >
                                   {i === 0 ? "You" : `Player ${i}`}
                                 </div>
                                 <div className="p-2 hover:underline">
@@ -157,7 +163,7 @@ const Vote = () => {
           variants={variants}
           initial="hide"
           animate="show"
-          className="fixed bottom-5 md:bottom-10 md:h-32 md:w-[70%] w-[96%] flex-col rounded shadow-lg md:left-[15%] z-20 flex"
+          className="fixed bottom-5 lg:bottom-10 lg:h-32 lg:w-[70%] w-[96%] flex-col rounded shadow-lg lg:left-[15%] z-20 flex"
         >
           {isVoted ? (
             <Card>
@@ -174,7 +180,7 @@ const Vote = () => {
             </Card>
           ) : (
             <Card>
-              <div className="flex md:flex-row flex-col p-1 justify-around flex-1">
+              <div className="flex lg:flex-row flex-col p-1 justify-around flex-1">
                 <div className="inline-flex">
                   <div className="absolute -top-16 self-center w-full flex items-center justify-center">
                     <div className="w-80">
@@ -188,9 +194,9 @@ const Vote = () => {
                       </AnimatePresence>
                     </div>
                   </div>
-                  <div className="flex justify-center h-full flex-col md:m-2 relative z-50">
-                    <div className="flex md:flex-row flex-col">
-                      <div className="flex self-start md:p-2 underline font-bold text-white my-2">
+                  <div className="flex justify-center h-full flex-col lg:m-2 relative z-50">
+                    <div className="flex lg:flex-row flex-col">
+                      <div className="flex self-start lg:p-2 underline font-bold text-white my-2">
                         Who is the human?
                       </div>
                       <div className="flex items-center gap-2 text-sm pl-4 text-blue-600">
@@ -225,7 +231,7 @@ const Vote = () => {
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-1 items-center md:justify-end justify-center mt-4 mb:mt-0">
+                <div className="flex flex-1 items-center lg:justify-end justify-center mt-4 mb:mt-0">
                   <div className="w-auto">
                     <Button
                       message="Submit!!"

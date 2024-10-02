@@ -11,6 +11,7 @@ import MatchCard from "src/component/MatchCard";
 import LanguageSwitch from "src/component/Switch";
 import TitleArea from "src/component/TitleArea";
 import { delay } from "src/util/delay.util";
+import { localStorageUtil } from "src/util/localStorage.util";
 
 const Solo = () => {
   const [language, setLanguage] = useState<0 | 1>(0);
@@ -19,6 +20,7 @@ const Solo = () => {
   const { data } = useOnlineCheck();
   const { startGame } = useStartGame();
   const { data: me } = useFindMe();
+  const { getItem, setItem } = localStorageUtil();
 
   const handleClick = async () => {
     const res = await startGame({ language: language === 0 ? "en" : "ja" });
@@ -27,28 +29,14 @@ const Solo = () => {
     navigate(`waiting/${waitingUserId}`);
   };
 
-  const speech = useCallback(
-    ({
-      text,
-      language = "en-US",
-    }: {
-      text: string;
-      language: "en-US" | "ja-JP";
-    }) => {
-      const utterance = new SpeechSynthesisUtterance(text);
-      const voices = speechSynthesis.getVoices();
-      const voice = voices.find((voice) => voice.lang === language);
-      if (voice) {
-        utterance.voice = voice;
-      }
-      window.speechSynthesis.speak(utterance);
-    },
-    []
-  );
+  const setup = useCallback(() => {
+    const language = getItem("game-language");
+    language && setLanguage(Number(language) as 0 | 1);
+  }, [getItem]);
 
   useEffect(() => {
-    // speech({ text: "Welcome to the game", language: "en-US" });
-  }, [speech]);
+    setup();
+  }, [setup]);
 
   if (!data) return null;
 
@@ -57,7 +45,7 @@ const Solo = () => {
       <TitleArea title="Game" />
       <Transition>
         <div className="p-2 flex flex-1 flex-col">
-          <div className="md:flex-nowrap gap-2 justify-between flex flex-wrap">
+          <div className="lg:flex-nowrap gap-2 justify-between flex flex-wrap">
             <Box
               title="Online users"
               message={data.onlineUsersCount.toString()}
@@ -73,8 +61,8 @@ const Solo = () => {
           </div>
           <div className="flex flex-col flex-1">
             <div className="text-white my-4 font-semibold">Game Setting</div>
-            <div className="flex flex-1 gap-2 md:flex-row flex-col">
-              <div className="flex flex-col md:w-1/3 w-full justify-center gap-10 ">
+            <div className="flex flex-1 gap-2 lg:flex-row flex-col">
+              <div className="flex flex-col lg:w-1/3 w-full justify-center gap-10 ">
                 <div className="flex">
                   <div className="h-10 w-full">
                     <Card>
@@ -83,9 +71,13 @@ const Solo = () => {
                         <div className="flex flex-1 items-center justify-center">
                           <LanguageSwitch
                             language={language}
-                            onToggle={() =>
-                              setLanguage((prev) => (prev === 0 ? 1 : 0))
-                            }
+                            onToggle={() => {
+                              setLanguage((prev) => {
+                                const current = prev === 0 ? 1 : 0;
+                                setItem("game-language", current);
+                                return current;
+                              });
+                            }}
                           />
                         </div>
                       </div>

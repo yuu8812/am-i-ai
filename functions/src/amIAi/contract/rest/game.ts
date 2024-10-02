@@ -41,7 +41,14 @@ export const GAME_CONTRACT = c.router({
       200: c.type<{
         gameId: string;
         gameUserId: string;
-        gameUsers: { userId: string; userName: string; iconUrl: string }[];
+        gameUsers: {
+          userId: string;
+          userName: string;
+          iconUrl: string;
+          online: boolean;
+          humanNessRate: number;
+          humanDetectRate: number;
+        }[];
       }>(),
     },
   },

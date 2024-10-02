@@ -41,7 +41,7 @@ const NavBarForMobile = () => {
     toast.success("SignOut Succeed");
   };
   return (
-    <div className="flex flex-col md:hidden">
+    <div className="flex flex-col lg:hidden">
       <button
         className="p-4"
         onClick={(e) => {

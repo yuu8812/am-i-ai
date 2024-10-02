@@ -78,21 +78,25 @@ const MultiPlay = () => {
 
   const handleAnswer = useCallback(async () => {
     if (!currentQuestion || !value) return;
-    await answer({
-      questionId: currentQuestion.id,
-      answer: value,
-      gameUserId: gameUserId as string,
-    });
-    await mutate();
-    toast.success(
-      <DefaultToast
-        twClassName="w-60"
-        message="Your answer has been submitted!!"
-      />,
-      {
-        id: "answer_succeed_modal",
-      }
-    );
+    try {
+      await answer({
+        questionId: currentQuestion.id,
+        answer: value,
+        gameUserId: gameUserId as string,
+      });
+      await mutate();
+      toast.success(
+        <DefaultToast
+          twClassName="w-60"
+          message="Your answer has been submitted!!"
+        />,
+        {
+          id: "answer_succeed_modal",
+        }
+      );
+    } catch (error) {
+      toast.error("Something went wrong. Please retry");
+    }
   }, [answer, currentQuestion, value, mutate, gameUserId]);
 
   const navigateVote = useCallback(() => {
@@ -141,9 +145,9 @@ const MultiPlay = () => {
     setCurrentQuestion(currentQuestion);
   }, [progress, findCurrentQuestion]);
 
-  const handleBeforeEnd = useCallback(() => {
+  const handleBeforeEnd = useCallback(async () => {
     if (!value || isAnswered) return;
-    handleAnswer();
+    await handleAnswer();
   }, [handleAnswer, value, isAnswered]);
 
   useEffect(() => {
@@ -157,16 +161,16 @@ const MultiPlay = () => {
   return (
     <div className="flex flex-1 flex-col">
       <TitleArea title="MultiPlay" />
-      <div className="fixed md:bottom-6 md:right-16 z-50 scale-50 bottom-1 right-1">
+      <div className="fixed lg:bottom-6 lg:right-16 z-50 scale-50 bottom-1 right-1">
         <Robot />
       </div>
       {progress && health && (
         <Transition>
           <div className="text-white my-4 pl-1">Joined Players</div>
-          <div className="flex flex-col md:flex-row gap-2">
+          <div className="flex flex-col lg:flex-row gap-2">
             {health.gameUsers?.map((user, i) => {
               return (
-                <div key={user.id} className="h-10 text-white md:w-1/2 text-sm">
+                <div key={user.id} className="h-10 text-white lg:w-1/2 text-sm">
                   <Card>
                     <div className="flex items-center justify-between flex-1">
                       <div className="m-1 flex items-center gap-2">
@@ -199,7 +203,10 @@ const MultiPlay = () => {
                   </div>
                 </Card>
               </motion.div>
-              <div className="flex h-40 w-full md:w-[80%] self-center mt-10">
+              <div className="text-gray-400 text-sm p-2">
+                ** Please answer deeply as much as you can
+              </div>
+              <div className="flex h-40 w-full lg:w-[80%] self-center mt-10">
                 <div className="flex flex-col flex-1">
                   <div className="flex items-center gap-2 text-white pb-2 pl-8">
                     <div className="">
@@ -216,17 +223,22 @@ const MultiPlay = () => {
                     <div className="w-6">
                       {isAnswered && <FaCheck size={20} color="green" />}
                     </div>
-                    {!dateOver ? (
-                      <TextArea
-                        inputRef={inputRef}
-                        ref={inputRef}
-                        value={value}
-                        onChange={(e) => setValue(e.target.value)}
-                        editable={!isAnswered}
-                      />
-                    ) : (
-                      <TextAreaPlaceHolder message="回答は締め切られました" />
-                    )}
+                    <div className="flex flex-1 flex-col gap-2">
+                      {!dateOver ? (
+                        <TextArea
+                          inputRef={inputRef}
+                          ref={inputRef}
+                          value={value}
+                          onChange={(e) => setValue(e.target.value)}
+                          editable={!isAnswered}
+                        />
+                      ) : (
+                        <TextAreaPlaceHolder message="回答は締め切られました" />
+                      )}
+                      <div className="text-gray-400 text-sm">
+                        ** Once you sent, you cant edit here
+                      </div>
+                    </div>
                   </div>
                   <div className="h-20 flex flex-1 self-center">
                     <AnimatePresence>

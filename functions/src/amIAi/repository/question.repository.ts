@@ -1,5 +1,6 @@
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
+import { QUESTION_STATUS } from 'src/amIAi/constants/question';
 import { Question } from 'src/amIAi/entities/Question';
 import * as z from 'zod';
 
@@ -22,5 +23,15 @@ export class QuestionRepository {
     );
 
     await forkedEm.persistAndFlush(questionEntities);
+  }
+
+  async checkQuestionExist(): Promise<boolean> {
+    const forkedEm = this.em.fork();
+
+    const questions = await forkedEm.count(Question, {
+      status: QUESTION_STATUS.ACTIVE,
+    });
+
+    return questions > 50;
   }
 }

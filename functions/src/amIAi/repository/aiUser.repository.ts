@@ -1,6 +1,10 @@
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
-import { personalities } from 'src/amIAi/constants/personality';
+import { LANGUAGE } from 'src/amIAi/constants/game';
+import {
+  personalities,
+  personalitiesEn,
+} from 'src/amIAi/constants/personality';
 import { AiUser } from 'src/amIAi/entities/AiUser';
 
 @Injectable()
@@ -17,6 +21,14 @@ export class AiUserRepository {
     personalities.map((personality) => {
       forkedEm.create(AiUser, {
         config: personality,
+        language: LANGUAGE.JP,
+      });
+    });
+
+    personalitiesEn.map((personality) => {
+      forkedEm.create(AiUser, {
+        config: personality,
+        language: LANGUAGE.EN,
       });
     });
 

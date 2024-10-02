@@ -5,6 +5,7 @@ import {
   GAME_RATE_TYPE,
   IS_VOTED,
   LANGUAGE,
+  LanguageType,
   WHICH_USER,
 } from 'src/amIAi/constants/game';
 import { Personality } from 'src/amIAi/constants/personality';
@@ -18,6 +19,7 @@ import { Question } from 'src/amIAi/entities/Question';
 import { User } from 'src/amIAi/entities/User';
 import { Vote } from 'src/amIAi/entities/Vote';
 import { WaitingUser } from 'src/amIAi/entities/WaitingUser';
+import { QUESTION_STATUS } from 'src/amIAi/constants/question';
 @Injectable()
 export class GameRepository {
   constructor(
@@ -91,6 +93,8 @@ export class GameRepository {
       userName: string;
       online: boolean;
       iconUrl: string;
+      humanNessRate: number;
+      humanDetectRate: number;
     }[];
   }> {
     const forkedEm = this.em.fork();
@@ -110,20 +114,54 @@ export class GameRepository {
       },
     );
 
-    // 5秒以内にonlineDetectedAtを更新している場合にtrueを返す
+    const humanDetectRate = async (id: string) =>
+      await forkedEm.findOne(
+        GameRate,
+        {
+          user: id,
+          type: GAME_RATE_TYPE.HUMAN_DETECTION,
+        },
+        {
+          orderBy: { createdAt: 'desc' },
+        },
+      );
+
+    const humanNessRate = async (id: string) =>
+      await forkedEm.findOne(
+        GameRate,
+        {
+          user: id,
+          type: GAME_RATE_TYPE.HUMAN_NESS,
+        },
+        {
+          orderBy: { createdAt: 'desc' },
+        },
+      );
+
     const isOnline = (onlineDetectedAt: Date) => {
       return onlineDetectedAt >= new Date(Date.now() - 5000);
     };
 
-    return {
-      gameId: gameId,
-      gameUserId: gameUsers.find((gameUser) => gameUser.user.id === userId).id,
-      gameUsers: gameUsers.map((gameUser) => ({
+    const gameUserId = gameUsers.find(
+      (gameUser) => gameUser.user.id === userId,
+    )?.id;
+
+    // gameUsers.map の中で非同期処理を行うため、Promise.all を使って解決
+    const resolvedGameUsers = await Promise.all(
+      gameUsers.map(async (gameUser) => ({
         userId: gameUser.user.id,
         userName: gameUser.user.name,
         iconUrl: gameUser.user.iconUrl,
         online: isOnline(gameUser.onlineDetectedAt),
+        humanNessRate: (await humanNessRate(gameUser.user.id))?.rate ?? 0, // fallback 0 in case of null
+        humanDetectRate: (await humanDetectRate(gameUser.user.id))?.rate ?? 0, // fallback 0 in case of null
       })),
+    );
+
+    return {
+      gameId,
+      gameUserId,
+      gameUsers: resolvedGameUsers,
     };
   }
 
@@ -159,7 +197,7 @@ export class GameRepository {
         whichUser: WHICH_USER.AI,
       },
       {
-        populate: ['aiUser'],
+        populate: ['aiUser', 'game'],
       },
     );
 
@@ -179,10 +217,24 @@ export class GameRepository {
     ) => {
       return await this.generativeAiClient.sendMessage<{ answer: string }>(
         `
-あなたの人格は ${JSON.stringify(personality)} です。
+あなたの人格は
+${personality.name}
+${personality.behaviorPatterns.join('\n')}
+${personality.traits.join('\n')}
+${personality.dislikes.join('\n')}
+${personality.likes.join('\n')}
+です。
 
-この人格に基づいて次の質問に回答してください。
+この人格に基づいて次の質問に簡潔に最大50文字程度で回答してください。
+簡潔に答えられる質問である場合に、非常に簡潔に答えてください。
+綺麗事は回答しないでください。
+質問の回答を読むのは中学生程度の知識がある人です。
 ${question}
+
+回答は${
+          aiGameUsersNew[0].game.language === LANGUAGE.JP ? '日本語' : '英語'
+        }でお願いします。
+
 レスポンスは以下の形式でお願いします。
 {
   answer: string
@@ -328,7 +380,7 @@ ${question}
         });
 
         if (gameUsersCount === humanCount) {
-          await this.createGameQuestion(gameId, 5);
+          await this.createGameQuestion(gameId, 5, game.language);
           await this.createAiGameUsers({ gameId, aiCount: 2 });
           game.status = 1;
           await forkedEm.persistAndFlush(game);
@@ -614,11 +666,19 @@ ${question}
   /**
    *
    */
-  async createGameQuestion(gameId: string, questionCount: number) {
+  async createGameQuestion(
+    gameId: string,
+    questionCount: number,
+    language: LanguageType,
+  ) {
     const forkedEm = this.em.fork();
 
     const randomQuestions = await forkedEm
       .createQueryBuilder(Question, 'q')
+      .where({
+        language,
+        status: QUESTION_STATUS.ACTIVE,
+      })
       .orderBy({ [raw('RANDOM()')]: 'ASC' })
       .limit(questionCount)
       .getResultList();
@@ -628,19 +688,19 @@ ${question}
         game: gameId,
         questions: question,
         phase: i,
-        // i * 20秒以内に回答する
-        // indexが0の場合に25秒以内
+        // i * 30秒以内に回答する
+        // indexが0の場合に35秒以内
         shouldAnswerAt: new Date(
-          Date.now() + (i + 1) * (i === 0 ? 23000 : 20000),
+          Date.now() + (i + 1) * (i === 0 ? 35000 : 30000),
         ),
       });
     });
 
     const game = await forkedEm.findOne(Game, { id: gameId });
 
-    // 最後の質問の回答時間+20秒を設定
+    // 最後の質問の回答時間+30秒を設定
     game.shouldAnswerAt = new Date(
-      Date.now() + (questionCount + 2) * 20000 + 3000,
+      Date.now() + (questionCount + 2) * 30000 + 3000,
     );
 
     await forkedEm.flush();
@@ -911,12 +971,12 @@ ${question}
       console.log(meSuccessEmpty, opponentSuccessEmpty);
       if (meSuccess) {
         forkedEm.create(GameRate, {
-          rate: currentOpponentHumanNessRate + 5,
+          rate: currentOpponentHumanNessRate + 15,
           type: GAME_RATE_TYPE.HUMAN_NESS,
           user: opponentUser.user.id,
         });
         forkedEm.create(GameRate, {
-          rate: currentMyHumanDetectionRate + 10,
+          rate: currentMyHumanDetectionRate + 15,
           type: GAME_RATE_TYPE.HUMAN_DETECTION,
           user: userId,
         });
@@ -935,12 +995,12 @@ ${question}
       }
       if (opponentSuccess) {
         forkedEm.create(GameRate, {
-          rate: currentMyHumanNessRate + 5,
+          rate: currentMyHumanNessRate + 15,
           type: GAME_RATE_TYPE.HUMAN_NESS,
           user: userId,
         });
         forkedEm.create(GameRate, {
-          rate: currentOpponentHumanDetectionRate + 10,
+          rate: currentOpponentHumanDetectionRate + 15,
           type: GAME_RATE_TYPE.HUMAN_DETECTION,
           user: opponentUser.user.id,
         });

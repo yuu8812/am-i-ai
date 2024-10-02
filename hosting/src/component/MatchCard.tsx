@@ -47,14 +47,14 @@ const MatchCard = ({
               initial={{ opacity: 0, x: -200 }}
               exit={{ opacity: 0, x: 200 }}
               transition={{ duration: 0.3 }}
-              className="w-40 h-full p-4 flex flex-1 md:flex-row flex-col"
+              className="w-40 h-full p-4 flex flex-1 lg:flex-row flex-col"
             >
               <div>
                 <div className="text-2xl font-semibold text-white">
                   {meOrYou === "me" ? "You" : "Opponent"}
                 </div>
                 <div className="text-xl font-semibold text-gray-400 pt-2">
-                  name: {name}
+                  Name: {name}
                 </div>
                 <div className="my-4">
                   <img
@@ -66,22 +66,22 @@ const MatchCard = ({
                   />
                 </div>
                 <div className="text-xl font-semibold text-gray-400 pt-2 flex gap-4">
-                  <div className="">humanDetectRate:</div>
+                  <div className="">HumanDetectRate:</div>
                   <div className="text-red-500">{humanDetectRate}</div>
                 </div>
                 {humanDetectionRank && (
                   <div className="text-xl text-gray-400 pt-2 flex gap-4 font-semibold items-center">
-                    <div className="">Rank:</div>
+                    <div className="">GlobalRank:</div>
                     <div className="text-red-500">{humanDetectionRank}</div>
                   </div>
                 )}
                 <div className="text-xl font-semibold text-gray-400 pt-2 flex gap-4">
-                  <div className="">humanNessRate:</div>
+                  <div className="">HumanNessRate:</div>
                   <div className="text-blue-500">{humanNessRate}</div>
                 </div>
                 {humanNessRank && (
                   <div className="text-xl font-semibold text-gray-400 pt-2 flex gap-4 items-center">
-                    <div className="">Rank:</div>
+                    <div className="">GlobalRank:</div>
                     <div className="text-blue-500">{humanNessRank}</div>
                   </div>
                 )}

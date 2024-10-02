@@ -1,4 +1,5 @@
 import { Collection, Entity, OneToMany, Property } from '@mikro-orm/core';
+import { LANGUAGE, LanguageType } from 'src/amIAi/constants/game';
 import { Personality } from 'src/amIAi/constants/personality';
 import { GameUser } from 'src/amIAi/entities/GameUser';
 
@@ -11,6 +12,10 @@ export class AiUser extends BaseEntity {
   @Property({ default: 0 })
   // 0: Active, 2: Not Active
   status: 0 | 1;
+
+  @Property({ default: LANGUAGE.EN })
+  // 0: 日本語, 1: 英語
+  language: LanguageType;
 
   @Property({ type: 'jsonb' })
   config: Personality;

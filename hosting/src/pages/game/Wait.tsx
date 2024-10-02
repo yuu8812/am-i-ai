@@ -61,7 +61,7 @@ const Wait = () => {
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="fixed md:bottom-6 md:right-16 z-50 scale-50 bottom-1 right-1">
+      <div className="fixed lg:bottom-6 lg:right-16 z-50 scale-50 bottom-1 right-1">
         <Robot />
       </div>
       <TitleArea title="Now you are waiting for a match" />
@@ -72,8 +72,8 @@ const Wait = () => {
         </div>
         {me && gameData && (
           <div className="flex flex-1">
-            <div className="flex flex-1 items-center justify-around p-4 gap-10 md:flex-row flex-col">
-              <div className="max-w-[500px] md:w-40 w-full h-[400px] m-4 flex flex-1">
+            <div className="flex flex-1 items-center justify-around p-4 gap-10 lg:flex-row flex-col">
+              <div className="max-w-[500px] lg:w-40 w-full h-[400px] m-4 flex flex-1">
                 <MatchCard
                   iconUrl={me.iconUrl}
                   name={me.name}
@@ -90,12 +90,12 @@ const Wait = () => {
                   alt="vs_icon"
                 />
               </div>
-              <div className="max-w-[500px] w-full md:w-40 h-[400px] m-4 flex flex-1">
+              <div className="max-w-[500px] w-full lg:w-40 h-[400px] m-4 flex flex-1">
                 <MatchCard
                   iconUrl={opponent?.iconUrl}
                   name={opponent?.userName}
-                  humanDetectRate={100}
-                  humanNessRate={100}
+                  humanDetectRate={opponent?.humanDetectRate ?? 0}
+                  humanNessRate={opponent?.humanNessRate ?? 0}
                   meOrYou="you"
                   searching={gameDataLength !== 2}
                 />

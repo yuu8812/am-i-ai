@@ -4,6 +4,7 @@ import {
   ChatSession,
   HarmCategory,
   HarmBlockThreshold,
+  GenerationConfig,
 } from '@google/generative-ai';
 import { Injectable } from '@nestjs/common';
 import { AppConfigService } from 'src/amIAi/config/config.service';
@@ -38,7 +39,7 @@ export class GenerativeAiClient {
     this.apiKey = this.appConfigService.get('GENERATIVE_AI_API_KEY');
     this.genAi = new GoogleGenerativeAI(this.apiKey);
     this.model = this.genAi.getGenerativeModel({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-1.5-pro',
       safetySettings,
     });
     this.chatSession = this.model.startChat({
@@ -47,25 +48,34 @@ export class GenerativeAiClient {
     });
   }
 
+  //エラー時の3回までの再実行機能を備えたsendMessage
   async sendMessage<T>(message: string) {
-    const result = await this.chatSession.sendMessage(message);
-    const json = result.response.text();
-    return JSON.parse(json) as T;
+    let retryCount = 0;
+    while (retryCount < 3) {
+      try {
+        const result = await this.chatSession.sendMessage(message);
+        const json = result.response.text();
+        return JSON.parse(json) as T;
+      } catch (error) {
+        retryCount++;
+        if (retryCount === 3) {
+          throw new Error(
+            `Failed to send message to generative AI : ${JSON.stringify(
+              error,
+            )}`,
+          );
+        }
+      }
+    }
   }
 
   private generationConfig({
-    temperature = 1,
-    topP = 0.95,
-    topK = 64,
+    temperature = 1.8, // Increase from 1.5 to 1.8 or higher
+    topP = 0.8, // Increase to allow more diverse sampling
+    topK = 100, // Allow for more options
     maxOutputTokens = 10000,
     responseMimeType = 'application/json',
-  }: {
-    temperature?: number;
-    topP?: number;
-    topK?: number;
-    maxOutputTokens?: number;
-    responseMimeType?: 'application/json';
-  }) {
+  }): GenerationConfig {
     return {
       temperature,
       topP,

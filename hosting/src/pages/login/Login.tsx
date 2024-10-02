@@ -37,7 +37,7 @@ const Login = () => {
         <div className="flex flex-1 flex-col items-center justify-center">
           <div className="h-fit w-fit">
             <Card>
-              <div className="h-80 w-80 md:w-[500px] flex flex-1 flex-col items-center justify-center">
+              <div className="h-80 w-80 lg:w-[500px] flex flex-1 flex-col items-center justify-center">
                 <div className="w-[80%]">
                   <GoogleSignUpButton onClick={signIn} />
                 </div>

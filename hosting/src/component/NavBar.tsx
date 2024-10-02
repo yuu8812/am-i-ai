@@ -37,7 +37,7 @@ const NavBar = () => {
     toast.success("SignOut Succeed");
   };
   return (
-    <div className="w-40 z-40 md:flex hidden">
+    <div className="w-40 z-40 lg:flex hidden">
       <div className="p-2 flex flex-1 flex-col fixed h-screen bg-gray-800 shadow-lg shadow-black w-40 justify-between">
         <div>
           <div className="p-2 text-lg font-bold text-white flex items-center gap-2">

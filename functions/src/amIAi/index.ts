@@ -11,15 +11,21 @@ import * as serviceAccount from 'src/amIAi/firebase.json';
 
 import { AppConfigService } from 'src/amIAi/config/config.service';
 import { getApps } from 'firebase-admin/app';
-import { InitializeUseCase } from 'src/amIAi/usecase/init/initiaize.usecase';
+import { InitializeUseCase } from 'src/amIAi/usecase/init/initialize.usecase';
 
 export const server = express();
 
 const init = async () => {
   getApps().length === 0 &&
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
-    });
+    admin.initializeApp(
+      process.env.NODE_ENV !== 'FIREBASE_FUNCTIONS'
+        ? {
+            credential: admin.credential.cert(
+              serviceAccount as admin.ServiceAccount,
+            ),
+          }
+        : undefined,
+    );
 
   Logger.log(
     `firebase: ${await (admin as any).app().options.credential
@@ -37,6 +43,7 @@ const init = async () => {
   await app.get(MikroORM).getSchemaGenerator().ensureDatabase();
   await app.get(MikroORM).getSchemaGenerator().updateSchema();
   await initialize.execute();
+  Logger.log('Question initialized');
 
   return app;
 };

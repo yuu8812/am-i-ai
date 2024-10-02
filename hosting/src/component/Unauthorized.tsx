@@ -5,7 +5,7 @@ import Button from "src/component/Button";
 const Unauthorized: React.FC = () => {
   const navigate = useNavigate();
   const handleClick = () => {
-    navigate("/");
+    navigate("/login");
   };
   return (
     <div className="flex items-center flex-1 justify-center bg-gray-900 text-white">
@@ -30,14 +30,11 @@ const Unauthorized: React.FC = () => {
         <h1 className="text-5xl font-extrabold text-gray-100">Access Denied</h1>
         <div className="h-10"></div>
         {/* 説明文 */}
-        <p className="text-gray-400 mb-6">
-          You don't have permission to view this page. Please make sure you have
-          the correct credentials.
-        </p>
+        <p className="text-gray-400 mb-6">Unauthorized</p>
 
         {/* 戻るボタン */}
         <div className="w-80">
-          <Button message="Go Back to Home" onCLick={handleClick} />
+          <Button message="Go to Login Page" onCLick={handleClick} />
         </div>
       </div>
     </div>

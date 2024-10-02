@@ -3,7 +3,7 @@ import "src/style/robot.css"; // 外部スタイルシートを使用
 
 const Robot: React.FC = () => {
   return (
-    <div>
+    <div className="pointer-events-none lg:scale-100 scale-50">
       <div className="robot">
         {/* 頭 */}
         <div className="head">

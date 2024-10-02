@@ -26,7 +26,7 @@ import { ProgressUseCase } from 'src/amIAi/usecase/game/progress.usecase';
 import { ResultUseCase } from 'src/amIAi/usecase/game/result.usecase';
 import { StartGameUseCase } from 'src/amIAi/usecase/game/startGame.usecase';
 import { VoteUseCase } from 'src/amIAi/usecase/game/vote.usecase';
-import { InitializeUseCase } from 'src/amIAi/usecase/init/initiaize.usecase';
+import { InitializeUseCase } from 'src/amIAi/usecase/init/initialize.usecase';
 import { CreateUserUsecase } from 'src/amIAi/usecase/user/createUser.usecase';
 import { EditUserUsecase } from 'src/amIAi/usecase/user/editUser.usecase';
 import { FindMeUsecase } from 'src/amIAi/usecase/user/findMe.usecase';

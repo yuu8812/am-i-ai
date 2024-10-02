@@ -41,7 +41,7 @@ const Setting = () => {
       <Transition>
         <form className="flex flex-1 flex-col">
           <div className="h-8"></div>
-          <div className="flex gap-4 md:w-80 w-full md:items-center flex-col md:flex-row">
+          <div className="flex gap-4 lg:w-80 w-full lg:items-center flex-col lg:flex-row">
             <div className="text-white">Name </div>
             <TextArea
               inputRef={ref}
