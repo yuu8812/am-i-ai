@@ -1,3 +1,4 @@
+import { EditUserUsecase } from './../usecase/user/editUser.usecase';
 import { FindMeUsecase } from './../usecase/user/findMe.usecase';
 import { Controller } from '@nestjs/common';
 import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
@@ -11,6 +12,7 @@ export class UserController {
     private readonly findMeUseCase: FindMeUsecase,
     private readonly createUserUseCase: CreateUserUsecase,
     private readonly onlineCheckUsecase: OnlineCheckUsecase,
+    private readonly editUserUsecase: EditUserUsecase,
   ) {}
 
   @TsRestHandler(CONTRACT.USERS)
@@ -23,7 +25,7 @@ export class UserController {
         return await this.createUserUseCase.execute(param);
       },
       editUser: async (param) => {
-        throw new Error('Function nota implemented.');
+        return await this.editUserUsecase.execute(param);
       },
       onlineCheck: async (param) => {
         return await this.onlineCheckUsecase.execute(param);

@@ -23,11 +23,11 @@ export const USER_CONTRACT = c.router({
             createdAt: Date;
           }[];
           humanDetectionRank: number;
-          aiNess: {
+          humanNess: {
             rate: number;
             createdAt: Date;
           }[];
-          aiNessRank: number;
+          humanNessRank: number;
         };
       }>(),
     },
@@ -46,10 +46,7 @@ export const USER_CONTRACT = c.router({
 
   editUser: {
     method: 'PUT',
-    path: '/user/:id',
-    pathParams: z.object({
-      id: z.string().uuid(),
-    }),
+    path: '/user',
     responses: {
       200: c.type<{ id: string }>(),
     },

@@ -22,8 +22,8 @@ export class FindMeUsecase {
         iconUrl: user.iconUrl,
         rates: {
           humanDetection: user.rates.humanDetection,
-          aiNess: user.rates.aiNess,
-          aiNessRank: user.rates.aiNessRank,
+          humanNess: user.rates.humanNess,
+          humanNessRank: user.rates.humanNessRank,
           humanDetectionRank: user.rates.humanDetectionRank,
         },
       },

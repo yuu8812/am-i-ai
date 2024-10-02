@@ -33,6 +33,7 @@ const init = async () => {
   app.use(helmet());
   app.enableCors({ origin: allowOrigins });
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
+
   await app.get(MikroORM).getSchemaGenerator().ensureDatabase();
   await app.get(MikroORM).getSchemaGenerator().updateSchema();
   await initialize.execute();

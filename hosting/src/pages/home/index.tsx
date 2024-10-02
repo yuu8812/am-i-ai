@@ -1,4 +1,5 @@
 import { Suspense, lazy } from "react";
+import DefaultMeta from "src/component/meta/DefaultMeta";
 import Skeleton from "src/component/Skeleton";
 
 const Home = lazy(async () => {
@@ -7,9 +8,16 @@ const Home = lazy(async () => {
 
 const LazyHome = () => {
   return (
-    <Suspense fallback={<Skeleton />}>
-      <Home />
-    </Suspense>
+    <>
+      <DefaultMeta
+        title="Am-I-Ai / Home"
+        name="Am-I-Ai / Home"
+        content="This is Am-I-Ai Home page"
+      />
+      <Suspense fallback={<Skeleton />}>
+        <Home />
+      </Suspense>
+    </>
   );
 };
 

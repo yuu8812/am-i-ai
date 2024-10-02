@@ -1,5 +1,5 @@
 import { EntityManager } from '@mikro-orm/postgresql';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { GAME_RATE_TYPE } from 'src/amIAi/constants/game';
 import { Game } from 'src/amIAi/entities/Game';
 import { GameRate } from 'src/amIAi/entities/GameRate';
@@ -17,6 +17,19 @@ export class UserRepository {
     });
 
     return !!user;
+  }
+
+  async editUser({ name, userId }: { name: string; userId: string }) {
+    const forkedEm = this.em.fork();
+    const user = await forkedEm.findOne(User, {
+      id: userId,
+    });
+
+    user.name = name;
+
+    await forkedEm.persistAndFlush(user);
+
+    return user.id;
   }
 
   async createUser({
@@ -45,7 +58,7 @@ export class UserRepository {
     gameRate1.user = user;
 
     const gameRate2 = new GameRate();
-    gameRate2.type = GAME_RATE_TYPE.AI_NESS;
+    gameRate2.type = GAME_RATE_TYPE.HUMAN_NESS;
     gameRate2.rate = 100;
     gameRate2.user = user;
 
@@ -61,7 +74,7 @@ export class UserRepository {
       id: userId,
     });
 
-    const humanDetectionRates = await forkedEm.find(
+    const humanDetectRates = await forkedEm.find(
       GameRate,
       {
         user: user,
@@ -69,19 +82,19 @@ export class UserRepository {
       },
       {
         orderBy: { createdAt: 'desc' },
-        limit: 20,
+        limit: 10,
       },
     );
 
-    const aiNessRate = await forkedEm.find(
+    const humanNessRate = await forkedEm.find(
       GameRate,
       {
         user: user,
-        type: GAME_RATE_TYPE.AI_NESS,
+        type: GAME_RATE_TYPE.HUMAN_NESS,
       },
       {
         orderBy: { createdAt: 'desc' },
-        limit: 20,
+        limit: 10,
       },
     );
 
@@ -114,8 +127,8 @@ export class UserRepository {
       .getConnection()
       .execute(query(user.id));
 
-    const aiNessRank = results.find(
-      (result) => result.type === GAME_RATE_TYPE.AI_NESS,
+    const humanNessRank = results.find(
+      (result) => result.type === GAME_RATE_TYPE.HUMAN_NESS,
     );
     const humanDetectionRank = results.find(
       (result) => result.type === GAME_RATE_TYPE.HUMAN_DETECTION,
@@ -126,16 +139,16 @@ export class UserRepository {
       name: user.name,
       iconUrl: user.iconUrl,
       rates: {
-        humanDetection: humanDetectionRates.map((rate) => ({
+        humanDetection: humanDetectRates.map((rate) => ({
           rate: rate.rate,
           createdAt: rate.createdAt,
         })),
         humanDetectionRank: Number(humanDetectionRank?.overall_rank),
-        aiNess: aiNessRate.map((rate) => ({
+        humanNess: humanNessRate.map((rate) => ({
           rate: rate.rate,
           createdAt: rate.createdAt,
         })),
-        aiNessRank: Number(aiNessRank?.overall_rank),
+        humanNessRank: Number(humanNessRank?.overall_rank),
       },
     };
   }

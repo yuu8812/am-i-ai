@@ -20,10 +20,6 @@ export class Question extends BaseEntity {
   question: string;
 
   @Property({ default: 0 })
-  // 0: admin
-  createdBy: 0 | 1 | 2 | 3;
-
-  @Property({ default: 0 })
   // 0: 日本語, 1: 英語
   language: 0 | 1;
 

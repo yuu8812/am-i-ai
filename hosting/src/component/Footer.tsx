@@ -1,3 +1,6 @@
+import { FaTwitter } from "react-icons/fa";
+import { Link } from "react-router-dom";
+
 const FOOTER_LINKS = [
   {
     name: "About",
@@ -27,10 +30,15 @@ const FOOTER_LINKS = [
 
 const Footer = () => {
   return (
-    <footer className="text-center">
-      <div className="m-4 bg-gray-800 py-6">
+    <footer className="">
+      <div className="m-4 bg-gray-800 py-6 flex items-center justify-center">
         <p className="text-gray-400">
-          &copy; 2024 AI-ness & Human Detection. All rights reserved.
+          <Link to="https://x.com/am_i_ai_" target="_blank">
+            <div className="flex items-center gap-2">
+              <FaTwitter />
+              twitter
+            </div>
+          </Link>
         </p>
       </div>
     </footer>

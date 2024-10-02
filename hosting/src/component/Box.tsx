@@ -4,7 +4,7 @@ const Box = ({
   message,
   title,
   width = "w-full",
-  height = "h-40",
+  height = "h-28",
 }: {
   message: string;
   title: string;

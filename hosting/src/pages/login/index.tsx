@@ -2,23 +2,23 @@ import { Suspense, lazy } from "react";
 import Skeleton from "react-loading-skeleton";
 import DefaultMeta from "src/component/meta/DefaultMeta";
 
-const Setting = lazy(async () => {
-  return import("src/pages/setting/Setting");
+const Login = lazy(async () => {
+  return import("src/pages/login/Login");
 });
 
-const LazySetting = () => {
+const LazyLogin = () => {
   return (
     <>
       <DefaultMeta
-        title="Am-I-Ai / Setting"
-        name="Am-I-Ai / Setting"
-        content="This is Am-I-Ai Setting page"
+        title="Am-I-Ai / Login"
+        name="Am-I-Ai / Login"
+        content="This is Am-I-Ai login page"
       />
       <Suspense fallback={<Skeleton />}>
-        <Setting />
+        <Login />
       </Suspense>
     </>
   );
 };
 
-export { LazySetting };
+export { LazyLogin };

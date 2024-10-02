@@ -6,13 +6,13 @@ const RateChart = ({
   data,
 }: {
   data: {
-    aiNess: number[];
+    humanNess: number[];
     humanDetect: number[];
     dates: Date[];
   };
 }) => {
-  const max = Math.max(...data.aiNess, ...data.humanDetect);
-  const min = Math.min(...data.aiNess, ...data.humanDetect);
+  const max = Math.max(...data.humanNess, ...data.humanDetect);
+  const min = Math.min(...data.humanNess, ...data.humanDetect);
   const paddingSize = (max - min) / 8;
   return (
     <Line
@@ -22,19 +22,19 @@ const RateChart = ({
         datasets: [
           {
             data: data.humanDetect,
-            borderColor: "#ca7e40", // 線の色
+            borderColor: "#ad0f0f", // 線の色
             borderWidth: 2, // 線の太さ
             fill: false, // 塗りつぶしを無効化
             tension: 0.4, // 曲線を描く
             label: "HumanDetectRate", // 凡例
           },
           {
-            data: data.aiNess,
-            borderColor: "rgba(75, 192, 192, 1)", // 線の色
+            data: data.humanNess,
+            borderColor: "#404dcb", // 線の色
             borderWidth: 2, // 線の太さ
             fill: false, // 塗りつぶしを無効化
             tension: 0.4, // 曲線を描く
-            label: "Ai-NessRate", // 凡例
+            label: "HumanNessRate", // 凡例
           },
         ],
       }}

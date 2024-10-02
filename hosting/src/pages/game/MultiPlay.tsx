@@ -157,16 +157,16 @@ const MultiPlay = () => {
   return (
     <div className="flex flex-1 flex-col">
       <TitleArea title="MultiPlay" />
-      <div className="fixed bottom-6 right-16 z-50 scale-50">
+      <div className="fixed md:bottom-6 md:right-16 z-50 scale-50 bottom-1 right-1">
         <Robot />
       </div>
       {progress && health && (
         <Transition>
           <div className="text-white my-4 pl-1">Joined Players</div>
-          <div className="flex gap-2">
+          <div className="flex flex-col md:flex-row gap-2">
             {health.gameUsers?.map((user, i) => {
               return (
-                <div key={user.id} className="h-10 text-white w-1/2 text-sm">
+                <div key={user.id} className="h-10 text-white md:w-1/2 text-sm">
                   <Card>
                     <div className="flex items-center justify-between flex-1">
                       <div className="m-1 flex items-center gap-2">
@@ -199,7 +199,7 @@ const MultiPlay = () => {
                   </div>
                 </Card>
               </motion.div>
-              <div className="flex h-40 w-[80%] self-center mt-10">
+              <div className="flex h-40 w-full md:w-[80%] self-center mt-10">
                 <div className="flex flex-col flex-1">
                   <div className="flex items-center gap-2 text-white pb-2 pl-8">
                     <div className="">
@@ -212,7 +212,7 @@ const MultiPlay = () => {
                     />
                     <div className="">seconds</div>
                   </div>
-                  <div className="flex flex-1 items-center gap-2">
+                  <div className="flex flex-1 items-center gap-2 h-40">
                     <div className="w-6">
                       {isAnswered && <FaCheck size={20} color="green" />}
                     </div>

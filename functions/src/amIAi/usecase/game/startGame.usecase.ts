@@ -17,7 +17,6 @@ export class StartGameUseCase {
     param: GameContractRequestShapes['startGame'],
   ): Promise<GameContractResponseShapes['startGame']> {
     const { userId } = extractIdFromHeader(param);
-    await this.questionRepository.createQuestion(['魚', 'fish'], 0);
     const startGameResponse = await this.gameRepository.startGame(
       userId,
       param.body.language,

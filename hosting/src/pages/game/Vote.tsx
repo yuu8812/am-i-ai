@@ -78,7 +78,7 @@ const Vote = () => {
   };
 
   const navigateResult = useCallback(() => {
-    navigate(`/game/multi/${gameUserId}/result`);
+    // navigate(`/game/multi/${gameUserId}/result`);
   }, [navigate, gameUserId]);
 
   const handleOnEnd = async () => {
@@ -119,7 +119,7 @@ const Vote = () => {
                     <div className="" key={`${gameQuestion}_${i}`}>
                       <Card>
                         <div className="p-2">
-                          <div className="flex gap gap-2">
+                          <div className="flex gap gap-2 md:flex-row flex-col">
                             <div className="">Q.{i + 1}</div>
                             <div className="">
                               {gameQuestion.question.question}
@@ -132,8 +132,8 @@ const Vote = () => {
                         {gameQuestion.answers.map((answer, i) => {
                           return (
                             <div className="flex" key={`${answer}_${i}`}>
-                              <div className="flex items-center gap-2">
-                                <div className="bg-white w-24 rounded text-black p-2 text-sm text-center">
+                              <div className="flex items-center gap-2 md:flex-row flex-col">
+                                <div className="bg-white min-w-24 rounded text-black p-2 text-sm self-start text-center">
                                   {i === 0 ? "You" : `Player ${i}`}
                                 </div>
                                 <div className="p-2 hover:underline">
@@ -157,7 +157,7 @@ const Vote = () => {
           variants={variants}
           initial="hide"
           animate="show"
-          className="fixed bottom-6 h-32 w-[70%] border rounded shadow-lg left-[15%] z-20 flex"
+          className="fixed bottom-5 md:bottom-10 md:h-32 md:w-[70%] w-[96%] flex-col rounded shadow-lg md:left-[15%] z-20 flex"
         >
           {isVoted ? (
             <Card>
@@ -174,57 +174,66 @@ const Vote = () => {
             </Card>
           ) : (
             <Card>
-              <div className="absolute -top-16 self-center w-full flex items-center justify-center">
-                <div className="w-80">
-                  <AnimatePresence>
-                    {!gameUser && (
-                      <Pop type="bottom" text="Choose one user and submit" />
-                    )}
-                  </AnimatePresence>
-                </div>
-              </div>
-              <div className="flex justify-center h-full flex-col m-2 relative z-50">
-                <div className="flex">
-                  <div className="flex self-start p-2 underline font-bold text-white">
-                    Who is the human?
+              <div className="flex md:flex-row flex-col p-1 justify-around flex-1">
+                <div className="inline-flex">
+                  <div className="absolute -top-16 self-center w-full flex items-center justify-center">
+                    <div className="w-80">
+                      <AnimatePresence>
+                        {!gameUser && (
+                          <Pop
+                            type="bottom"
+                            text="Choose one user and submit"
+                          />
+                        )}
+                      </AnimatePresence>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 text-sm pl-4 text-blue-600">
-                    <div className="">You have more</div>
-                    {answers && (
-                      <CountDown date={new Date(answers.shouldAnswerAt)} />
-                    )}
-                    <div className="">seconds to answer</div>
+                  <div className="flex justify-center h-full flex-col md:m-2 relative z-50">
+                    <div className="flex md:flex-row flex-col">
+                      <div className="flex self-start md:p-2 underline font-bold text-white my-2">
+                        Who is the human?
+                      </div>
+                      <div className="flex items-center gap-2 text-sm pl-4 text-blue-600">
+                        <div className="">You have more</div>
+                        {answers && (
+                          <CountDown date={new Date(answers.shouldAnswerAt)} />
+                        )}
+                        <div className="">seconds to answer</div>
+                      </div>
+                    </div>
+                    <div className="flex flex-1 m-2 gap-6 pt-2">
+                      {answers?.gameQuestions[0].answers
+                        .slice(1)
+                        .map((answer, i) => {
+                          return (
+                            <button
+                              onClick={() =>
+                                handleSelectGameUser(answer.gameUserId)
+                              }
+                              type="button"
+                              key={`${answer}_${i}_user`}
+                              className={`min-w-28 h-10 shadow-lg rounded p-2 text-sm hover:scale-105 transition-all border border-slate-500 ${
+                                gameUser === answer.gameUserId
+                                  ? "bg-blue-500 text-white"
+                                  : "bg-white  text-black"
+                              }`}
+                            >
+                              Player {i + 1}
+                            </button>
+                          );
+                        })}
+                    </div>
                   </div>
                 </div>
-                <div className="flex flex-1 m-2 gap-6 pt-2">
-                  {answers?.gameQuestions[0].answers
-                    .slice(1, 4)
-                    .map((answer, i) => {
-                      return (
-                        <button
-                          onClick={() =>
-                            handleSelectGameUser(answer.gameUserId)
-                          }
-                          key={`${answer}_${i}_user`}
-                          className={`w-28 h-10 shadow-lg rounded p-2 text-sm hover:scale-105 transition-all border border-slate-500 ${
-                            gameUser === answer.gameUserId
-                              ? "bg-blue-500 text-white"
-                              : "bg-white  text-black"
-                          }`}
-                        >
-                          Player {i + 1}
-                        </button>
-                      );
-                    })}
-                </div>
-              </div>
-              <div className="flex flex-1 items-center justify-end pr-10">
-                <div className="w-60">
-                  <Button
-                    message="Submit!!"
-                    disabled={!canSubmit}
-                    onCLick={handleSubmit}
-                  />
+                <div className="flex flex-1 items-center md:justify-end justify-center mt-4 mb:mt-0">
+                  <div className="w-auto">
+                    <Button
+                      message="Submit!!"
+                      disabled={!canSubmit}
+                      onCLick={handleSubmit}
+                      width="w-auto"
+                    />
+                  </div>
                 </div>
               </div>
             </Card>

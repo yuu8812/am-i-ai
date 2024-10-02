@@ -1,11 +1,13 @@
+import { GenerativeAiClient } from 'src/amIAi/generativeAi/generativeAiClient';
 import { EntityManager, raw } from '@mikro-orm/postgresql';
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import {
   GAME_RATE_TYPE,
   IS_VOTED,
   LANGUAGE,
   WHICH_USER,
 } from 'src/amIAi/constants/game';
+import { Personality } from 'src/amIAi/constants/personality';
 import { AiUser } from 'src/amIAi/entities/AiUser';
 import { Game } from 'src/amIAi/entities/Game';
 import { GameAnswer } from 'src/amIAi/entities/GameAnswer';
@@ -18,7 +20,10 @@ import { Vote } from 'src/amIAi/entities/Vote';
 import { WaitingUser } from 'src/amIAi/entities/WaitingUser';
 @Injectable()
 export class GameRepository {
-  constructor(protected readonly em: EntityManager) {}
+  constructor(
+    protected readonly em: EntityManager,
+    private readonly generativeAiClient: GenerativeAiClient,
+  ) {}
 
   /**
    * ユーザがゲームを開始した時にそのユーザをwaitingUserテーブルに登録する関数
@@ -138,14 +143,68 @@ export class GameRepository {
       .slice(0, aiCount);
 
     randomAiUsers.map((aiUser) => {
-      forkedEm.create(GameUser, {
+      return forkedEm.create(GameUser, {
         game: gameId,
         aiUser: aiUser.id,
         whichUser: WHICH_USER.AI,
       });
     });
 
-    forkedEm.flush();
+    await forkedEm.flush();
+
+    const aiGameUsersNew = await forkedEm.find(
+      GameUser,
+      {
+        game: gameId,
+        whichUser: WHICH_USER.AI,
+      },
+      {
+        populate: ['aiUser'],
+      },
+    );
+
+    const gameQuestions = await forkedEm.find(
+      GameQuestion,
+      {
+        game: gameId,
+      },
+      {
+        populate: ['questions'],
+      },
+    );
+
+    const generateGameQuestionAnswers = async (
+      personality: Personality,
+      question: string,
+    ) => {
+      return await this.generativeAiClient.sendMessage<{ answer: string }>(
+        `
+あなたの人格は ${JSON.stringify(personality)} です。
+
+この人格に基づいて次の質問に回答してください。
+${question}
+レスポンスは以下の形式でお願いします。
+{
+  answer: string
+}
+`,
+      );
+    };
+
+    aiGameUsersNew.map(async (aiGameUser) => {
+      return gameQuestions.map(async (gameQuestion) => {
+        const { answer } = await generateGameQuestionAnswers(
+          aiGameUser.aiUser.config,
+          gameQuestion.questions.question,
+        );
+        forkedEm.create(GameAnswer, {
+          gameUser: aiGameUser.id,
+          question: gameQuestion.id,
+          answer,
+        });
+        await forkedEm.flush();
+      });
+    });
   }
 
   /**
@@ -289,6 +348,7 @@ export class GameRepository {
       const gameUser = forkedEm.create(GameUser, {
         user,
         game,
+        whichUser: WHICH_USER.HUMAN,
       });
 
       await forkedEm.persistAndFlush([game, gameUser]);
@@ -459,7 +519,7 @@ export class GameRepository {
           answers: gameQuestion.gameAnswers.getItems().map((gameAnswer) => ({
             id: gameAnswer.id,
             user: {
-              id: gameAnswer.gameUser.user.id,
+              id: gameAnswer.gameUser?.user?.id,
             },
             answered: gameAnswer.gameUser.id === gameUserId,
           })),
@@ -621,7 +681,13 @@ export class GameRepository {
 
     const gameUsers = game.gameUsers
       .map((gameUser) => gameUser.id)
-      .sort((a) => (a === gameUserId ? -1 : 0));
+      // ランダムに並び替え後にgameUserIdに一致するものを先頭に持ってくる
+      .sort(() => {
+        return Math.random() - 0.5;
+      })
+      .sort((a) => {
+        return a === gameUserId ? -1 : 1;
+      });
 
     const builded = {
       gameId: game.id,
@@ -815,25 +881,21 @@ export class GameRepository {
     const meSuccess = myVote?.voteTo?.whichUser === WHICH_USER.HUMAN;
     const meSuccessEmpty = !myVote?.voteTo;
 
-    const meSucceed = meSuccess && !meSuccessEmpty;
-
     const opponentSuccess =
       opponentVote?.voteTo?.whichUser === WHICH_USER.HUMAN;
     const opponentSuccessEmpty = !opponentVote?.voteTo;
 
-    const opponentSucceed = opponentSuccess && !opponentSuccessEmpty;
-
     const {
-      myAiNessRate,
+      myHumanNessRate,
       myHumanDetectionRate,
-      opponentAiNessRate,
+      opponentHumanNessRate,
       opponentHumanDetectionRate,
     } = await this.getGameRate({
       meUserId: userId,
       opponentUserId: opponentUser.user.id,
     });
 
-    const isWatchedResult = game?.status === 1;
+    const isWatchedResult = game?.status === 2;
 
     if (!isWatchedResult) {
       const currentMyHumanDetectionRate = myHumanDetectionRate[0].rate;
@@ -841,81 +903,69 @@ export class GameRepository {
       const currentOpponentHumanDetectionRate =
         opponentHumanDetectionRate[0].rate;
 
-      const currentMyAiNessRate = myAiNessRate[0].rate;
+      const currentMyHumanNessRate = myHumanNessRate[0].rate;
 
-      const currentOpponentAiNessRate = opponentAiNessRate[0].rate;
-      if (meSucceed) {
-        const newMyHumanDetectionRate = forkedEm.create(GameRate, {
+      const currentOpponentHumanNessRate = opponentHumanNessRate[0].rate;
+
+      console.log(meSuccess, opponentSuccess);
+      console.log(meSuccessEmpty, opponentSuccessEmpty);
+      if (meSuccess) {
+        forkedEm.create(GameRate, {
+          rate: currentOpponentHumanNessRate + 5,
+          type: GAME_RATE_TYPE.HUMAN_NESS,
+          user: opponentUser.user.id,
+        });
+        forkedEm.create(GameRate, {
           rate: currentMyHumanDetectionRate + 10,
           type: GAME_RATE_TYPE.HUMAN_DETECTION,
           user: userId,
         });
-        const newOpponentAiNess = forkedEm.create(GameRate, {
-          rate: currentOpponentAiNessRate - 5,
-          type: GAME_RATE_TYPE.AI_NESS,
-          user: opponentUser.user.id,
-        });
-        await forkedEm.persistAndFlush([
-          newMyHumanDetectionRate,
-          newOpponentAiNess,
-        ]);
       } else {
-        const newMyHumanDetectionRate = forkedEm.create(GameRate, {
+        forkedEm.create(GameRate, {
           rate: currentMyHumanDetectionRate - 5,
           type: GAME_RATE_TYPE.HUMAN_DETECTION,
           user: userId,
         });
-        const newOpponentAiNess = forkedEm.create(GameRate, {
-          rate: currentOpponentAiNessRate + 5,
-          type: GAME_RATE_TYPE.AI_NESS,
+
+        forkedEm.create(GameRate, {
+          rate: currentOpponentHumanNessRate - (!meSuccessEmpty ? 5 : 0),
+          type: GAME_RATE_TYPE.HUMAN_NESS,
           user: opponentUser.user.id,
         });
-        await forkedEm.persistAndFlush([
-          newMyHumanDetectionRate,
-          newOpponentAiNess,
-        ]);
       }
-
-      if (opponentSucceed) {
-        const newOpponentHumanDetectionRate = forkedEm.create(GameRate, {
+      if (opponentSuccess) {
+        forkedEm.create(GameRate, {
+          rate: currentMyHumanNessRate + 5,
+          type: GAME_RATE_TYPE.HUMAN_NESS,
+          user: userId,
+        });
+        forkedEm.create(GameRate, {
           rate: currentOpponentHumanDetectionRate + 10,
           type: GAME_RATE_TYPE.HUMAN_DETECTION,
           user: opponentUser.user.id,
         });
-        const newMyAiNessRate = forkedEm.create(GameRate, {
-          rate: currentMyAiNessRate - 5,
-          type: GAME_RATE_TYPE.AI_NESS,
-          user: userId,
-        });
-        await forkedEm.persistAndFlush([
-          newOpponentHumanDetectionRate,
-          newMyAiNessRate,
-        ]);
       } else {
-        const newOpponentHumanDetectionRate = forkedEm.create(GameRate, {
+        forkedEm.create(GameRate, {
           rate: currentOpponentHumanDetectionRate - 5,
           type: GAME_RATE_TYPE.HUMAN_DETECTION,
           user: opponentUser.user.id,
         });
-        const newMyAiNessRate = forkedEm.create(GameRate, {
-          rate: currentMyAiNessRate + 5,
-          type: GAME_RATE_TYPE.AI_NESS,
+
+        forkedEm.create(GameRate, {
+          rate: currentMyHumanNessRate - (!opponentSuccessEmpty ? 5 : 0),
+          type: GAME_RATE_TYPE.HUMAN_NESS,
           user: userId,
         });
-        await forkedEm.persistAndFlush([
-          newOpponentHumanDetectionRate,
-          newMyAiNessRate,
-        ]);
       }
 
-      game.status = 1;
-      await forkedEm.persistAndFlush([game]);
+      game.status = 2;
+      await forkedEm.flush();
     }
 
     const {
-      myAiNessRate: newMyAiNessRate,
+      myHumanNessRate: newMyHumanNessRate,
       myHumanDetectionRate: newMyHumanDetectionRate,
-      opponentAiNessRate: newOpponentAiNessRate,
+      opponentHumanNessRate: newOpponentHumanNessRate,
       opponentHumanDetectionRate: newOpponentHumanDetectionRate,
     } = await this.getGameRate({
       meUserId: userId,
@@ -926,29 +976,33 @@ export class GameRepository {
       gameId: game.id,
       result: {
         me: {
-          success: meSucceed,
+          status: meSuccess ? 'success' : meSuccessEmpty ? 'empty' : 'fail',
           humanDetect: {
             prevRate: newMyHumanDetectionRate[1]?.rate,
             currentRate: newMyHumanDetectionRate[0]?.rate,
           },
-          aiNess: {
-            prevRate: newMyAiNessRate[1]?.rate,
-            currentRate: newMyAiNessRate[0]?.rate,
+          humanNess: {
+            prevRate: newMyHumanNessRate[1]?.rate,
+            currentRate: newMyHumanNessRate[0]?.rate,
           },
         },
         opponent: {
-          success: opponentSucceed,
+          status: opponentSuccess
+            ? 'success'
+            : opponentSuccessEmpty
+            ? 'empty'
+            : 'fail',
           humanDetect: {
             prevRate: newOpponentHumanDetectionRate[1]?.rate,
             currentRate: newOpponentHumanDetectionRate[0]?.rate,
           },
-          aiNess: {
-            prevRate: newOpponentAiNessRate[1]?.rate,
-            currentRate: newOpponentAiNessRate[0]?.rate,
+          humanNess: {
+            prevRate: newOpponentHumanNessRate[1]?.rate,
+            currentRate: newOpponentHumanNessRate[0]?.rate,
           },
         },
       },
-    };
+    } as const;
   }
 
   async getGameRate({
@@ -974,13 +1028,13 @@ export class GameRepository {
       },
     );
 
-    const myAiNessRate = await forkedEm.find(
+    const myHumanNessRate = await forkedEm.find(
       GameRate,
       {
         user: {
           id: meUserId,
         },
-        type: GAME_RATE_TYPE.AI_NESS,
+        type: GAME_RATE_TYPE.HUMAN_NESS,
       },
       {
         orderBy: { createdAt: 'DESC' },
@@ -1002,13 +1056,13 @@ export class GameRepository {
       },
     );
 
-    const opponentAiNessRate = await forkedEm.find(
+    const opponentHumanNessRate = await forkedEm.find(
       GameRate,
       {
         user: {
           id: opponentUserId,
         },
-        type: GAME_RATE_TYPE.AI_NESS,
+        type: GAME_RATE_TYPE.HUMAN_NESS,
       },
       {
         orderBy: { createdAt: 'DESC' },
@@ -1018,9 +1072,9 @@ export class GameRepository {
 
     return {
       myHumanDetectionRate,
-      myAiNessRate,
+      myHumanNessRate,
       opponentHumanDetectionRate,
-      opponentAiNessRate,
+      opponentHumanNessRate,
     };
   }
 }

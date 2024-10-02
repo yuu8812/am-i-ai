@@ -28,6 +28,7 @@ import { StartGameUseCase } from 'src/amIAi/usecase/game/startGame.usecase';
 import { VoteUseCase } from 'src/amIAi/usecase/game/vote.usecase';
 import { InitializeUseCase } from 'src/amIAi/usecase/init/initiaize.usecase';
 import { CreateUserUsecase } from 'src/amIAi/usecase/user/createUser.usecase';
+import { EditUserUsecase } from 'src/amIAi/usecase/user/editUser.usecase';
 import { FindMeUsecase } from 'src/amIAi/usecase/user/findMe.usecase';
 import { OnlineCheckUsecase } from 'src/amIAi/usecase/user/onlineCheck.usecase';
 
@@ -69,7 +70,7 @@ import { OnlineCheckUsecase } from 'src/amIAi/usecase/user/onlineCheck.usecase';
     FindMeUsecase,
     CreateUserUsecase,
     OnlineCheckUsecase,
-
+    EditUserUsecase,
     /**
      * question
      */

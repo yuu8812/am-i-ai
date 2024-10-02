@@ -1,4 +1,5 @@
 import { Suspense, lazy } from "react";
+import DefaultMeta from "src/component/meta/DefaultMeta";
 
 const Solo = lazy(async () => {
   return import("src/pages/game/Solo");
@@ -34,41 +35,76 @@ const LazySolo = () => {
 
 const LazyMulti = () => {
   return (
-    <Suspense fallback={<div />}>
-      <Multi />
-    </Suspense>
+    <>
+      <DefaultMeta
+        title="Am-I-Ai / Game"
+        name="Am-I-Ai / Game"
+        content="This is Am-I-Ai Game page"
+      />
+      <Suspense fallback={<div />}>
+        <Multi />
+      </Suspense>
+    </>
   );
 };
 
 const LazyMultiPlay = () => {
   return (
-    <Suspense fallback={<div />}>
-      <MultiPlay />
-    </Suspense>
+    <>
+      <DefaultMeta
+        title="Am-I-Ai / Playing"
+        name="Am-I-Ai / Playing"
+        content="This is Am-I-Ai Playing page"
+      />
+      <Suspense fallback={<div />}>
+        <MultiPlay />
+      </Suspense>
+    </>
   );
 };
 
 const LazyWait = () => {
   return (
-    <Suspense fallback={<div />}>
-      <Wait />
-    </Suspense>
+    <>
+      <DefaultMeta
+        title="Am-I-Ai / Waiting"
+        name="Am-I-Ai / Waiting"
+        content="This is Am-I-Ai Waiting page"
+      />
+      <Suspense fallback={<div />}>
+        <Wait />
+      </Suspense>
+    </>
   );
 };
 
 const LazyVote = () => {
   return (
-    <Suspense fallback={<div />}>
-      <Vote />
-    </Suspense>
+    <>
+      <DefaultMeta
+        title="Am-I-Ai / Vote"
+        name="Am-I-Ai / Vote"
+        content="This is Am-I-Ai Vote page"
+      />
+      <Suspense fallback={<div />}>
+        <Vote />
+      </Suspense>
+    </>
   );
 };
 
 const LazyResult = () => {
   return (
-    <Suspense fallback={<div />}>
-      <Result />
-    </Suspense>
+    <>
+      <DefaultMeta
+        title="Am-I-Ai / Result"
+        name="Am-I-Ai / Result"
+        content="This is Am-I-Ai Result page"
+      />
+      <Suspense fallback={<div />}>
+        <Result />
+      </Suspense>
+    </>
   );
 };
 

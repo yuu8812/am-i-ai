@@ -198,14 +198,14 @@ export const GAME_CONTRACT = c.router({
         gameId: string;
         result: {
           me: {
-            success: boolean;
+            status: 'success' | 'empty' | 'fail';
             humanDetect: { prevRate: number; currentRate: number };
-            aiNess: { prevRate: number; currentRate: number };
+            humanNess: { prevRate: number; currentRate: number };
           };
           opponent: {
-            success: boolean;
+            status: 'success' | 'empty' | 'fail';
             humanDetect: { prevRate: number; currentRate: number };
-            aiNess: { prevRate: number; currentRate: number };
+            humanNess: { prevRate: number; currentRate: number };
           };
         };
       }>(),

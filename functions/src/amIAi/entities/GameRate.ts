@@ -8,7 +8,7 @@ import { BaseEntity } from 'src/amIAi/entityHelper/base';
 })
 export class GameRate extends BaseEntity {
   @Property({ default: 0 })
-  // 0: humanDetectionRate 1: AiNessRate
+  // 0: humanDetectRate 1: HumanNessRate
   type: GameRateType;
 
   @Property()

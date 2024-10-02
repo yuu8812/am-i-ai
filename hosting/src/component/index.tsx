@@ -6,7 +6,7 @@ export const LazyRateChart = ({
   data,
 }: {
   data: {
-    aiNess: number[];
+    humanNess: number[];
     humanDetect: number[];
     dates: Date[];
   };

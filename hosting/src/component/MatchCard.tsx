@@ -8,25 +8,25 @@ import { LazyRateChart } from "src/component";
 const MatchCard = ({
   iconUrl,
   name,
-  humanDetectionRate,
-  aiNessRate,
+  humanDetectRate,
+  humanNessRate,
   meOrYou = "me",
   searching = false,
   chart = false,
   chartData,
   humanDetectionRank,
-  aiNessRank,
+  humanNessRank,
 }: {
   name?: string;
   iconUrl?: string;
-  humanDetectionRate: number;
-  aiNessRate: number;
+  humanDetectRate: number;
+  humanNessRate: number;
   meOrYou?: "me" | "you";
   searching?: boolean;
   chart?: boolean;
-  chartData?: { aiNess: number[]; humanDetect: number[]; dates: Date[] };
+  chartData?: { humanNess: number[]; humanDetect: number[]; dates: Date[] };
   humanDetectionRank?: number;
-  aiNessRank?: number;
+  humanNessRank?: number;
 }) => {
   return (
     <Card>
@@ -34,7 +34,7 @@ const MatchCard = ({
         <AnimatePresence>
           {searching ? (
             <div className="flex items-center justify-center flex-1 flex-col">
-              <div className="text-2xl font-semibold text-white pb-4">
+              <div className="text-2xl font-semibold text-white my-10">
                 Searching for opponent
               </div>
               <div className="h-40 flex items-center justify-center">
@@ -47,7 +47,7 @@ const MatchCard = ({
               initial={{ opacity: 0, x: -200 }}
               exit={{ opacity: 0, x: 200 }}
               transition={{ duration: 0.3 }}
-              className="w-40 h-full p-4 flex flex-1"
+              className="w-40 h-full p-4 flex flex-1 md:flex-row flex-col"
             >
               <div>
                 <div className="text-2xl font-semibold text-white">
@@ -66,8 +66,8 @@ const MatchCard = ({
                   />
                 </div>
                 <div className="text-xl font-semibold text-gray-400 pt-2 flex gap-4">
-                  <div className="">humanDetectionRate:</div>
-                  <div className="text-red-500">{humanDetectionRate}</div>
+                  <div className="">humanDetectRate:</div>
+                  <div className="text-red-500">{humanDetectRate}</div>
                 </div>
                 {humanDetectionRank && (
                   <div className="text-xl text-gray-400 pt-2 flex gap-4 font-semibold items-center">
@@ -76,13 +76,13 @@ const MatchCard = ({
                   </div>
                 )}
                 <div className="text-xl font-semibold text-gray-400 pt-2 flex gap-4">
-                  <div className="">aiNessRate:</div>
-                  <div className="text-blue-500">{aiNessRate}</div>
+                  <div className="">humanNessRate:</div>
+                  <div className="text-blue-500">{humanNessRate}</div>
                 </div>
-                {aiNessRank && (
+                {humanNessRank && (
                   <div className="text-xl font-semibold text-gray-400 pt-2 flex gap-4 items-center">
                     <div className="">Rank:</div>
-                    <div className="text-blue-500">{aiNessRank}</div>
+                    <div className="text-blue-500">{humanNessRank}</div>
                   </div>
                 )}
               </div>
@@ -91,7 +91,7 @@ const MatchCard = ({
                   <div className="p-2 w-full h-full">
                     <LazyRateChart
                       data={{
-                        aiNess: chartData.aiNess,
+                        humanNess: chartData.humanNess,
                         humanDetect: chartData.humanDetect,
                         dates: chartData.dates,
                       }}

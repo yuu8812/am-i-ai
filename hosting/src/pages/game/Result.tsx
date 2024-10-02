@@ -30,12 +30,12 @@ const Result = () => {
 
   const meHumanDetectCurrentRate = data?.result.me.humanDetect.currentRate ?? 0;
   const meHumanDetectPrevRate = data?.result.me.humanDetect.prevRate ?? 0;
-  const meAiNessCurrentRate = data?.result.me.aiNess.currentRate ?? 0;
-  const meAiNessPrevRate = data?.result.me.aiNess.prevRate ?? 0;
+  const meHumanNessCurrentRate = data?.result.me.humanNess.currentRate ?? 0;
+  const meHumanNessPrevRate = data?.result.me.humanNess.prevRate ?? 0;
 
   const meHumanDetectRatingChange =
     meHumanDetectCurrentRate - meHumanDetectPrevRate;
-  const meAiNessRatingChange = meAiNessCurrentRate - meAiNessPrevRate;
+  const meHumanNessRatingChange = meHumanNessCurrentRate - meHumanNessPrevRate;
 
   return (
     <div className="flex flex-1 flex-col">
@@ -44,17 +44,17 @@ const Result = () => {
         <div className="flex flex-col flex-1">
           <div className="h-8"></div>
           {data && (
-            <div className="flex gap-4 flex-1 justify-center">
-              <div className="w-1/2">
+            <div className="flex gap-4 flex-1 justify-center md:flex-nowrap flex-wrap">
+              <div className="md:w-1/2 w-full">
                 <Card>
                   <div className="p-4 h-52 text-white">
                     <div className="text-2xl font-bold">
-                      {data.result?.me.success
+                      {data.result?.me.status === "success"
                         ? "You detected the human!"
                         : "You failed to detect the human."}
                     </div>
                     <div className="text-sm py-1 text-gray-400 font-bold">
-                      Your ai-ness rate
+                      Your human detection rate
                     </div>
                     <div className="flex text-lg font-bold gap-2 items-center py-2">
                       <div className="">{meHumanDetectPrevRate}</div>
@@ -69,26 +69,28 @@ const Result = () => {
                   </div>
                 </Card>
               </div>
-              <div className="w-1/2">
+              <div className="md:w-1/2 w-full">
                 <Card>
                   <div className="p-4 h-52 text-white">
                     <div className="text-2xl font-bold">
-                      {data.result?.opponent.success
+                      {data.result?.opponent.status === "success"
                         ? "Opponent detected that you are the human!"
+                        : data.result.opponent.status === "empty"
+                        ? "Opponent doesn't choose any user"
                         : "Opponent failed to detect that you are the human."}
                     </div>
                     <div className="text-sm py-1 text-gray-400 font-bold">
-                      Your human detection rate
+                      Your human-ness rate
                     </div>
                     <div className="flex text-lg font-bold gap-2 items-center py-2">
-                      <div className="">{meAiNessPrevRate}</div>
+                      <div className="">{meHumanNessPrevRate}</div>
                       <div className="">
                         <FaArrowRight size={12} />
                       </div>
-                      <div className="">{meAiNessCurrentRate}</div>
+                      <div className="">{meHumanNessCurrentRate}</div>
                     </div>
                     <div className="text-lg">
-                      {renderRatingChange(meAiNessRatingChange)}
+                      {renderRatingChange(meHumanNessRatingChange)}
                     </div>
                   </div>
                 </Card>
@@ -100,20 +102,22 @@ const Result = () => {
               <MatchCard
                 iconUrl={me.iconUrl}
                 name={me.name}
-                humanDetectionRate={me.rates.humanDetection[0].rate}
-                aiNessRate={me.rates.aiNess[0].rate}
+                humanDetectRate={me.rates.humanDetection[0].rate}
+                humanNessRate={me.rates.humanNess[0].rate}
                 chart
                 chartData={{
-                  aiNess: me.rates.aiNess.map((rate) => rate.rate).reverse(),
+                  humanNess: me.rates.humanNess
+                    .map((rate) => rate.rate)
+                    .reverse(),
                   humanDetect: me.rates.humanDetection
                     .map((rate) => rate.rate)
                     .reverse(),
-                  dates: me.rates.aiNess
+                  dates: me.rates.humanNess
                     .map((rate) => rate.createdAt)
                     .reverse(),
                 }}
                 humanDetectionRank={me.rates.humanDetectionRank}
-                aiNessRank={me.rates.aiNessRank}
+                humanNessRank={me.rates.humanNessRank}
               />
             )}
           </div>

@@ -35,7 +35,7 @@ export type LanguageType = (typeof LANGUAGE)[keyof typeof LANGUAGE];
 
 export const GAME_RATE_TYPE = {
   HUMAN_DETECTION: 0,
-  AI_NESS: 1,
+  HUMAN_NESS: 1,
 } as const;
 
 export type GameRateType = (typeof GAME_RATE_TYPE)[keyof typeof GAME_RATE_TYPE];

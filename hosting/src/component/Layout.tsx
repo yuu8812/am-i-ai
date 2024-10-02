@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import Footer from "src/component/Footer";
 import NavBar from "src/component/NavBar";
+import NavBarForMobile from "src/component/NavBarForMobile";
 import Skeleton from "src/component/Skeleton";
 import { useAuthState } from "src/globalState/authState";
 
@@ -9,12 +10,13 @@ const Layout = () => {
 
   return (
     <div className="flex flex-1 flex-col bg-gradient-to-br from-blue-900 to-zinc-900">
-      <div className="flex flex-1">
+      <div className="flex flex-1 md:flex-row flex-col">
         <NavBar />
+        <NavBarForMobile />
         <div className="flex flex-col flex-1 flex-shrink-0">
           <div className="flex flex-1 flex-col min-h-screen">
             {!!state ? (
-              <div className="p-4 flex flex-1">
+              <div className="md:p-4 p-2 flex flex-1">
                 <Outlet />
               </div>
             ) : (

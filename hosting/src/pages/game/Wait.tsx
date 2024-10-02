@@ -61,7 +61,7 @@ const Wait = () => {
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="fixed bottom-6 right-16 z-50 scale-50">
+      <div className="fixed md:bottom-6 md:right-16 z-50 scale-50 bottom-1 right-1">
         <Robot />
       </div>
       <TitleArea title="Now you are waiting for a match" />
@@ -72,16 +72,16 @@ const Wait = () => {
         </div>
         {me && gameData && (
           <div className="flex flex-1">
-            <div className="flex flex-1 items-center justify-around p-4 gap-10">
-              <div className="max-w-[500px] w-40 h-[400px] m-4 flex flex-1">
+            <div className="flex flex-1 items-center justify-around p-4 gap-10 md:flex-row flex-col">
+              <div className="max-w-[500px] md:w-40 w-full h-[400px] m-4 flex flex-1">
                 <MatchCard
                   iconUrl={me.iconUrl}
                   name={me.name}
-                  humanDetectionRate={me.rates.humanDetection[0].rate}
-                  aiNessRate={me.rates.aiNess[0].rate}
+                  humanDetectRate={me.rates.humanDetection[0].rate}
+                  humanNessRate={me.rates.humanNess[0].rate}
                 />
               </div>
-              <div className="w-20 h-40 flex items-center justify-center">
+              <div className="w-20 flex items-center justify-center">
                 <img
                   src="/vs.png"
                   width={100}
@@ -90,12 +90,12 @@ const Wait = () => {
                   alt="vs_icon"
                 />
               </div>
-              <div className="max-w-[500px] w-40 h-[400px] m-4 flex flex-1">
+              <div className="max-w-[500px] w-full md:w-40 h-[400px] m-4 flex flex-1">
                 <MatchCard
                   iconUrl={opponent?.iconUrl}
                   name={opponent?.userName}
-                  humanDetectionRate={100}
-                  aiNessRate={100}
+                  humanDetectRate={100}
+                  humanNessRate={100}
                   meOrYou="you"
                   searching={gameDataLength !== 2}
                 />

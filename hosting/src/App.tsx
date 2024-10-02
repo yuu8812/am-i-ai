@@ -23,6 +23,7 @@ import { LazySetting } from "src/pages/setting";
 import { Suspense } from "react";
 import Skeleton from "src/component/Skeleton";
 import AuthGuard from "src/pages/AuthGuard";
+import { LazyLogin } from "src/pages/login";
 
 const Router = () => {
   const location = useLocation();
@@ -32,6 +33,7 @@ const Router = () => {
       <Routes location={location} key={location.pathname}>
         <Route element={<Layout />}>
           <Route index element={<LazyHome />} />
+          <Route path="login" element={<LazyLogin />} />
           <Route path="game" element={<AuthGuard />}>
             <Route path="multi">
               <Route index element={<LazyMulti />} />

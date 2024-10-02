@@ -1,7 +1,12 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import Button from "src/component/Button";
 
 const Unauthorized: React.FC = () => {
+  const navigate = useNavigate();
+  const handleClick = () => {
+    navigate("/");
+  };
   return (
     <div className="flex items-center flex-1 justify-center bg-gray-900 text-white">
       <div className="flex items-center justify-center flex-col">
@@ -32,7 +37,7 @@ const Unauthorized: React.FC = () => {
 
         {/* 戻るボタン */}
         <div className="w-80">
-          <Button message="Go Back to Home" />
+          <Button message="Go Back to Home" onCLick={handleClick} />
         </div>
       </div>
     </div>

@@ -5,8 +5,9 @@ import { MdSettings } from "react-icons/md";
 import MultiIcon from "src/component/MultiIcon";
 import { auth } from "src/firebase/config";
 import { FaSignOutAlt } from "react-icons/fa";
+import toast from "react-hot-toast";
 
-const NAV_BAR_PATH_INFO_ARRAY = [
+export const NAV_BAR_PATH_INFO_ARRAY = [
   {
     route: "/",
     text: "Home",
@@ -26,15 +27,23 @@ const NAV_BAR_PATH_INFO_ARRAY = [
 
 const NavBar = () => {
   const navigate = useNavigate();
+  const me = !!auth?.currentUser;
   const handleSignOut = async () => {
-    await auth.signOut();
+    if (!auth.currentUser) return;
+    await auth.signOut().catch((e) => {
+      toast.error("SignOut Failed");
+    });
     navigate("/");
+    toast.success("SignOut Succeed");
   };
   return (
-    <div className="w-40 z-40 flex">
+    <div className="w-40 z-40 md:flex hidden">
       <div className="p-2 flex flex-1 flex-col fixed h-screen bg-gray-800 shadow-lg shadow-black w-40 justify-between">
         <div>
-          <div className="p-2 text-lg font-bold text-white">AmIAi</div>
+          <div className="p-2 text-lg font-bold text-white flex items-center gap-2">
+            <img src="/base.png" height={40} width={40} alt="icon" />
+            AmIAi
+          </div>
           <div className="mt-8 p-1 flex flex-col gap-2 text-sm transition-all">
             {NAV_BAR_PATH_INFO_ARRAY.map((pathInfo) => {
               return (
@@ -58,17 +67,19 @@ const NavBar = () => {
             })}
           </div>
         </div>
-        <div className="py-2">
-          <div
-            className="mx-2 cursor-pointer bg-white p-3 text-sm hover:scale-105 transition-all"
-            onClick={handleSignOut}
-          >
-            <div className="flex items-center gap-4">
-              <FaSignOutAlt size={12} />
-              SignOut
+        {me && (
+          <div className="py-2">
+            <div
+              className="mx-2 cursor-pointer bg-white p-3 text-sm hover:scale-105 transition-all"
+              onClick={handleSignOut}
+            >
+              <div className="flex items-center gap-4">
+                <FaSignOutAlt size={12} />
+                SignOut
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
